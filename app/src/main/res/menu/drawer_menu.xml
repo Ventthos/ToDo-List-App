@@ -1,18 +1,26 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    tools:ignore="HardcodedText">
+    tools:showIn="navigation_view">
 
-    <item
-        android:id="@+id/nav_account"
-        android:title="My Account" />
+    <group android:checkableBehavior="single">
+        <item android:title="@string/vistaTitle">
+            <menu>
+                <item android:id="@+id/nav_all" android:title="@string/allVista" android:icon="@drawable/all"/>
+                <item android:id="@+id/nav_importants" android:title="@string/importantVista" android:icon="@drawable/important"/>
+                <item android:id="@+id/nav_planned" android:title="@string/plannedVista" android:icon="@drawable/programated"/>
+                <item android:id="@+id/nav_completed" android:title="@string/completedVista" android:icon="@drawable/completed"/>
+            </menu>
+        </item>
+    </group>
 
-    <item
-        android:id="@+id/nav_settings"
-        android:title="Settings" />
+    <group>
+        <item android:title="@string/listTitle">
+            <menu>
+                <item android:id="@+id/pendingList" android:title="@string/pendingList" android:icon="@drawable/time"/>
+            </menu>
+        </item>
+    </group>
 
-    <item
-        android:id="@+id/nav_logout"
-        android:title="Logout" />
-
+    <item android:title="@string/addList" android:icon="@drawable/add_list"/>
 </menu>
