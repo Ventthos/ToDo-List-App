@@ -25,4 +25,10 @@
     <string name="listTitle">Título de la lista</string>
     <string name="listIcon">Ícono de la lista</string>
     <string name="listBackgroudColor">Color de fondo de la lista</string>
+    <string name="createTask">Crear tarea</string>
+
+    <string name="taskTitle">Título</string>
+    <string name="taskDescription">Notas</string>
+    <string name="taskImportance">Nivel de importancia</string>
+    <string name="taskDateLimit">Fecha de vencimiento</string>
 </resources>

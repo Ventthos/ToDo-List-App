@@ -24,54 +24,9 @@ import androidx.drawerlayout.widget.DrawerLayout
 import androidx.fragment.app.DialogFragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.navigation.NavigationView
 
-class ListDialogFragment : DialogFragment() {
-
-    lateinit var spinner: Spinner
-    /*
-    interface DatePickerListener {
-        fun onDateSelected(year: Int, month: Int, day: Int)
-    }
-
-    private var listener: DatePickerListener? = null
-
-    override fun onAttach(context: Context) {
-        super.onAttach(context)
-        listener = context as? DatePickerListener
-    }
-    */
-    override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
-        return activity?.let {
-            val builder = AlertDialog.Builder(it)
-            val inflater = requireActivity().layoutInflater;
-            val dialogView = inflater.inflate(R.layout.list_window, null)
-
-            spinner = dialogView.findViewById(R.id.colorSpinner)
-
-            builder.setView(dialogView)
-            loadColorSpinner()
-
-            builder.create()
-        } ?: throw IllegalStateException("Activity cannot be null")
-    }
-
-    private fun loadColorSpinner(){
-        var selectedColor = ColorList().defaulColor
-        spinner.apply {
-            adapter = ColorSpinnerAdapter(context, ColorList().basicColors())
-            setSelection(ColorList().colorPosition(selectedColor), false)
-            onItemSelectedListener = object : AdapterView.OnItemSelectedListener{
-                override fun onItemSelected(p0: AdapterView<*>?, p1: View?, position: Int, p3: Long)
-                {
-                    selectedColor = ColorList().basicColors()[position]
-                }
-
-                override fun onNothingSelected(p0: AdapterView<*>?) {}
-            }
-        }
-    }
-}
 
 //Clase para los items dentro de el recicler view
 data class Item(val title: String)
@@ -97,11 +52,13 @@ class ItemAdapter(private val itemList: List<Item>) : RecyclerView.Adapter<ItemA
 
     override fun getItemCount() = itemList.size
 }
+
 class MainActivity : AppCompatActivity() {
     lateinit var navigationView: NavigationView
     lateinit var drawerLayout: DrawerLayout
     lateinit var drawerToggle: ActionBarDrawerToggle
     lateinit var toolbar: androidx.appcompat.widget.Toolbar
+    lateinit var fab: FloatingActionButton
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -126,12 +83,14 @@ class MainActivity : AppCompatActivity() {
         drawerLayout = findViewById(R.id.drawer_layout)
         navigationView = findViewById(R.id.navigation_view)
         toolbar = findViewById(R.id.toolbar)
+        fab = findViewById(R.id.fab)
 
         // Drawer configuration
         drawerToggle = ActionBarDrawerToggle(this, drawerLayout, toolbar, R.string.openDrawerDesc, R.string.closeDrawerDesc)
         drawerLayout.addDrawerListener(drawerToggle)
         drawerToggle.syncState()
 
+        // Listeners
         navigationView.setNavigationItemSelectedListener { menuItem ->
             when (menuItem.itemId) {
                 R.id.navAddList->{
@@ -142,6 +101,9 @@ class MainActivity : AppCompatActivity() {
             true
         }
 
+        fab.setOnClickListener{
+            TaskDialogFragment().show(supportFragmentManager, "Task")
+        }
 
     }
 }

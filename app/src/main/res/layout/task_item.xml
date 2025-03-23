@@ -11,7 +11,7 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="#f8fbc8"
+        android:background="@color/mainColorBackgroud"
         android:baselineAligned="false">
 
         <LinearLayout
@@ -71,7 +71,7 @@
             <androidx.cardview.widget.CardView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:backgroundTint="#be2525"
+                android:backgroundTint="@color/mainColor"
                 app:contentPadding="6dp"
                 app:cardCornerRadius="20dp">
 
@@ -106,7 +106,7 @@
         <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
-            android:background="#efea00"
+            android:background="@color/mainColor"
             android:gravity="center">
 
             <CheckBox
