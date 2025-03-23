@@ -9,7 +9,7 @@
     <string name="plannedVista">Planeados</string>
     <string name="completedVista">Completadas</string>
 
-    <string name="listTitle">Listas</string>
+    <string name="listMenuTitle">Listas</string>
     <string name="pendingList">Pendientes</string>
     <string name="addList">Agregar lista</string>
     <string name="openDrawerDesc">Abrir menú</string>
@@ -21,4 +21,8 @@
     <string name="showCompleted">Mostrar completadas</string>
     <string name="dontShowCompleted">No mostrar completadas</string>
     <string name="editList">Editar lista</string>
+    <string name="createList">Crear Lista</string>
+    <string name="listTitle">Título de la lista</string>
+    <string name="listIcon">Ícono de la lista</string>
+    <string name="listBackgroudColor">Color de fondo de la lista</string>
 </resources>

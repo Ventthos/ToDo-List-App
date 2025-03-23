@@ -5,43 +5,14 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    app:cardCornerRadius="20dp">
+    app:cardCornerRadius="20dp"
+    android:layout_marginBottom="10dp">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@color/mainColorBackgroud"
-        android:baselineAligned="false"
-        >
-
-        <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:background="@color/mainColor"
-            android:padding="4dp"
-            android:orientation="vertical"
-            android:gravity="center">
-            <ImageView
-                android:layout_width="10dp"
-                android:layout_height="10dp"
-                android:src="@drawable/star"
-                app:tint="@color/white"/>
-            <ImageView
-                android:layout_width="10dp"
-                android:layout_height="10dp"
-                android:src="@drawable/star"
-                app:tint="@color/white"/>
-            <ImageView
-                android:layout_width="10dp"
-                android:layout_height="10dp"
-                android:src="@drawable/star"
-                app:tint="@color/white"/>
-            <ImageView
-                android:layout_width="10dp"
-                android:layout_height="10dp"
-                android:src="@drawable/star"
-                app:tint="@color/white"/>
-        </LinearLayout>
+        android:background="#f8fbc8"
+        android:baselineAligned="false">
 
         <LinearLayout
             android:layout_width="0dp"
@@ -52,19 +23,55 @@
             android:paddingVertical="6dp"
             >
 
-            <TextView
+            <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textColor="@color/black"
-                android:textStyle="bold"
-                tools:text="Título"
-                android:textSize="16sp"
-                android:layout_marginEnd="8dp"/>
+                android:layout_marginBottom="2dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="@color/black"
+                    android:textStyle="bold"
+                    tools:text="Título"
+                    android:textSize="16sp"
+                    android:layout_marginEnd="4dp"
+                    android:id="@+id/item_title"/>
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+
+                    android:padding="4dp"
+                    android:orientation="horizontal"
+                    android:gravity="center">
+                    <ImageView
+                        android:layout_width="10dp"
+                        android:layout_height="10dp"
+                        android:src="@drawable/star"
+                        app:tint="@color/black"/>
+                    <ImageView
+                        android:layout_width="10dp"
+                        android:layout_height="10dp"
+                        android:src="@drawable/star"
+                        app:tint="@color/black"/>
+                    <ImageView
+                        android:layout_width="10dp"
+                        android:layout_height="10dp"
+                        android:src="@drawable/star"
+                        app:tint="@color/black"/>
+                    <ImageView
+                        android:layout_width="10dp"
+                        android:layout_height="10dp"
+                        android:src="@drawable/star"
+                        app:tint="@color/black"/>
+                </LinearLayout>
+            </LinearLayout>
 
             <androidx.cardview.widget.CardView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:backgroundTint="@color/mainColor"
+                android:backgroundTint="#be2525"
                 app:contentPadding="6dp"
                 app:cardCornerRadius="20dp">
 
@@ -99,7 +106,7 @@
         <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
-            android:background="@color/mainColor"
+            android:background="#efea00"
             android:gravity="center">
 
             <CheckBox

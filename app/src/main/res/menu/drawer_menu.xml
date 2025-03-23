@@ -15,12 +15,12 @@
     </group>
 
     <group>
-        <item android:title="@string/listTitle">
+        <item android:title="@string/listMenuTitle">
             <menu>
                 <item android:id="@+id/pendingList" android:title="@string/pendingList" android:icon="@drawable/time"/>
             </menu>
         </item>
     </group>
 
-    <item android:title="@string/addList" android:icon="@drawable/add_list"/>
+    <item android:title="@string/addList" android:icon="@drawable/add_list" android:id="@+id/navAddList"/>
 </menu>
