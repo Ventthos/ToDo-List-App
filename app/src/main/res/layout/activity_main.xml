@@ -7,7 +7,7 @@
     android:layout_height="match_parent"
     android:background="#168BC34A"
     tools:context=".MainActivity"
-    tools:openDrawer="start"
+
     >
 
     <LinearLayout
@@ -15,29 +15,65 @@
         android:layout_height="match_parent"
         android:orientation="vertical">
 
-        <androidx.appcompat.widget.Toolbar
-            android:id="@+id/toolbar"
-            android:layout_width="match_parent"
-            android:layout_height="?attr/actionBarSize"
-            android:background="?attr/colorPrimary"
-            android:elevation="4dp"
-            android:theme="@style/ThemeOverlay.AppCompat.ActionBar"
-            app:popupTheme="@style/ThemeOverlay.AppCompat.Light"
-            app:title="Navigation Drawer Example" />
-
         <FrameLayout
-            android:id="@+id/fragment_container"
             android:layout_width="match_parent"
-            android:layout_height="match_parent" />
+            android:layout_height="220dp">
+            <ImageView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:src="@drawable/main_wallpaper"
+                android:scaleType="centerCrop"/>
+
+            <androidx.appcompat.widget.Toolbar
+                android:id="@+id/toolbar"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:elevation="4dp"
+                android:foregroundTint="@color/white"
+                app:menu="@menu/lista_menu" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="bottom"
+                android:layout_margin="10dp"
+                android:fontFamily="@font/gelasio"
+                android:text="@string/allVista"
+                android:textColor="@color/white"
+                android:textSize="21sp" />
+        </FrameLayout>
+
+        <androidx.coordinatorlayout.widget.CoordinatorLayout
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:padding="10dp">
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                />
+
+            <com.google.android.material.floatingactionbutton.FloatingActionButton
+                android:id="@+id/fab"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="bottom|end"
+                android:layout_margin="8dp"
+                app:elevation="2dp"
+                app:pressedTranslationZ="3dp"
+                app:backgroundTint="@color/mainColor"
+                app:srcCompat="@drawable/plus"
+                app:tint="@color/white"/>
+
+        </androidx.coordinatorlayout.widget.CoordinatorLayout>
+
+
     </LinearLayout>
 
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Abrir"
-        android:id="@+id/buttonPrueba"/>
 
     <com.google.android.material.navigation.NavigationView
+        tools:visibility="gone"
         android:id="@+id/navigation_view"
         android:layout_width="wrap_content"
         android:layout_height="match_parent"
