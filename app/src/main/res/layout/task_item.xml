@@ -36,35 +36,17 @@
                     tools:text="Título"
                     android:textSize="16sp"
                     android:layout_marginEnd="4dp"
-                    android:id="@+id/item_title"/>
+                    android:id="@+id/task_title"/>
 
                 <LinearLayout
                     android:layout_width="wrap_content"
                     android:layout_height="match_parent"
-
+                    android:id="@+id/starsContainer"
                     android:padding="4dp"
                     android:orientation="horizontal"
                     android:gravity="center">
-                    <ImageView
-                        android:layout_width="10dp"
-                        android:layout_height="10dp"
-                        android:src="@drawable/star"
-                        app:tint="@color/black"/>
-                    <ImageView
-                        android:layout_width="10dp"
-                        android:layout_height="10dp"
-                        android:src="@drawable/star"
-                        app:tint="@color/black"/>
-                    <ImageView
-                        android:layout_width="10dp"
-                        android:layout_height="10dp"
-                        android:src="@drawable/star"
-                        app:tint="@color/black"/>
-                    <ImageView
-                        android:layout_width="10dp"
-                        android:layout_height="10dp"
-                        android:src="@drawable/star"
-                        app:tint="@color/black"/>
+
+
                 </LinearLayout>
             </LinearLayout>
 
@@ -73,7 +55,8 @@
                 android:layout_height="wrap_content"
                 android:backgroundTint="@color/mainColor"
                 app:contentPadding="6dp"
-                app:cardCornerRadius="20dp">
+                app:cardCornerRadius="20dp"
+                android:id="@+id/datContainer">
 
                 <LinearLayout
                     android:layout_width="wrap_content"
@@ -95,6 +78,7 @@
                         android:textColor="@color/white"
                         tools:text="Límite: 17/08/2025"
                         android:textSize="12sp"
+                        android:id="@+id/taskDate"
                         />
                 </LinearLayout>
 
@@ -112,7 +96,8 @@
             <CheckBox
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:buttonTint="@color/white"/>
+                android:buttonTint="@color/white"
+                android:id="@+id/taskCompleted"/>
         </LinearLayout>
 
     </LinearLayout>

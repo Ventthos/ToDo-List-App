@@ -41,6 +41,7 @@
                     android:text="@string/taskTitle"
                     android:textSize="12sp"/>
                 <EditText
+                    android:id="@+id/titleInput"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:inputType="textCapSentences"/>
@@ -59,6 +60,7 @@
                     android:text="@string/taskDescription"
                     android:textSize="12sp"/>
                 <EditText
+                    android:id="@+id/notesInput"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:inputType="textMultiLine"/>
@@ -77,6 +79,7 @@
                     android:text="@string/taskImportance"
                     android:textSize="12sp"/>
                 <Spinner
+                    android:id="@+id/importanceSpinner"
                     android:layout_width="match_parent"
                     android:layout_height="35dp"/>
             </LinearLayout>
@@ -90,9 +93,10 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:id="@+id/taskNotes"
-                    android:text="@string/taskTitle"
+                    android:text="@string/taskDateLimit"
                     android:textSize="12sp"/>
                 <EditText
+                    android:id="@+id/dateSelector"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:inputType="date"/>

@@ -31,4 +31,6 @@
     <string name="taskDescription">Notas</string>
     <string name="taskImportance">Nivel de importancia</string>
     <string name="taskDateLimit">Fecha de vencimiento</string>
+    <string name="save">Guardar</string>
+
 </resources>
