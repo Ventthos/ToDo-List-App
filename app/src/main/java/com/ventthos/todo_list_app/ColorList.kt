@@ -2,9 +2,20 @@ package com.ventthos.todo_list_app
 
 import android.graphics.Color
 
+val blackHex = "000000"
+var whiteHex = "FFFFFF"
+
+var basicColors = listOf(
+    ColorObject(1, "Rojo", "be2525", "FBD6D6", whiteHex),
+    ColorObject(2, "Naranja", "e47421", "fbe5c8", whiteHex),
+    ColorObject(3, "Amarillo", "efea00", "f8fbc8", whiteHex),
+    ColorObject(4, "Verde", "14bd02", "d4fbc8", whiteHex),
+    ColorObject(5, "Azul", "18578a", "C8E2FA", whiteHex),
+    ColorObject(6, "Morado", "8702bd", "dccff7", whiteHex)
+)
+
 class ColorList {
-    private val blackHex = "000000"
-    private var whiteHex = "FFFFFF"
+
 
     val defaulColor: ColorObject = basicColors()[0]
 
@@ -18,14 +29,6 @@ class ColorList {
     }
 
     fun basicColors(): List<ColorObject>{
-        return listOf(
-            ColorObject("Rojo", "be2525", "FBD6D6", whiteHex),
-            ColorObject("Naranja", "e47421", "fbe5c8", whiteHex),
-            ColorObject("Amarillo", "efea00", "f8fbc8", whiteHex),
-            ColorObject("Verde", "14bd02", "d4fbc8", whiteHex),
-            ColorObject("Azul", "18578a", "C8E2FA", whiteHex),
-            ColorObject("Morado", "8702bd", "dccff7", whiteHex)
-
-        )
+        return basicColors
     }
 }

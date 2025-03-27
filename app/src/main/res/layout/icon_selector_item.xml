@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="75dp"
+    android:layout_height="75dp"
+    xmlns:tools="http://schemas.android.com/tools"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    app:cardCornerRadius="20dp"
+    android:layout_margin="4dp"
+    android:backgroundTint="@color/mercury"
+    android:id="@+id/buttonBackground">
+
+    <ImageButton
+        android:padding="6dp"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:scaleType="fitXY"
+        android:background="@null"
+        android:clipToOutline="true"
+        tools:src="@drawable/pesas"
+        android:id="@+id/iconButton"
+        >
+
+    </ImageButton>
+</androidx.cardview.widget.CardView>

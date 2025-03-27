@@ -15,8 +15,8 @@
     </group>
 
     <group>
-        <item android:title="@string/listMenuTitle">
-            <menu>
+        <item android:id="@+id/listMenuDisplay" android:title="@string/listMenuTitle">
+            <menu >
                 <item android:id="@+id/pendingList" android:title="@string/pendingList" android:icon="@drawable/time"/>
             </menu>
         </item>

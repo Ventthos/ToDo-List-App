@@ -38,7 +38,6 @@ class TaskDialogFragment: DialogFragment()  {
         val importance = importanceSelector.selectedItem as? Int ?: 0
         val date = dateSelector.text.toString()
         listener?.onTaskEdit(id, title, notes,importance,date,editing)
-
     }
 
     override fun onAttach(context: Context) {
@@ -95,6 +94,7 @@ class TaskDialogFragment: DialogFragment()  {
                 notesInput.setText(savedInstanceState.getString(NOTESTAG, ""))
                 importanceSelector.setSelection(savedInstanceState.getInt(IMPORTANCETAG, 0))
                 dateSelector.setText(savedInstanceState.getString(DATETAG, ""))
+                editing = savedInstanceState.getBoolean(EDITINGTAG)
             }
             else {
                 // Cargar valores iniciales desde argumentos

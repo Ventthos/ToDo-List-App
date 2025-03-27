@@ -32,9 +32,12 @@
                 android:text="@string/listIcon"
                 android:textSize="12sp"/>
             <ImageButton
+                android:id="@+id/iconChangerButton"
                 android:layout_width="160dp"
                 android:layout_height="160dp"
                 android:contentDescription="@string/listIcon"
+                android:scaleType="fitXY"
+                android:backgroundTint="@color/mercury"
                 />
         </LinearLayout>
 
@@ -60,7 +63,10 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:labelFor="@id/listTitle"
-                    android:inputType="text"/>
+                    android:inputType="textCapSentences"
+                    android:id="@+id/titleInput"
+                    />
+
             </LinearLayout>
             <LinearLayout
                 android:layout_width="match_parent"

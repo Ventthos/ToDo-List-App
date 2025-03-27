@@ -4,4 +4,6 @@
     <color name="white">#FFFFFFFF</color>
     <color name="mainColor">#18578a</color>
     <color name="mainColorBackgroud">#C8E2FA</color>
+    <color name="mercury">#e2e2e2</color>
+    <color name="silver">#cbcbcb</color>
 </resources>

@@ -4,6 +4,7 @@ import android.app.AlertDialog
 import android.app.Dialog
 import android.os.Build
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.MenuItem
 import android.view.View
@@ -33,8 +34,7 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.navigation.NavigationView
 
 
-//Clase para los items dentro de el recicler view
-data class Task(val id: Int, var title: String, var notes: String = "", var importance: Int, var date: String?, var completed: Boolean = false)
+
 
 //Adaptador para la clase Item
 class ItemAdapter(private val itemList: List<Task>) : RecyclerView.Adapter<ItemAdapter.ItemViewHolder>() {
@@ -77,7 +77,7 @@ class ItemAdapter(private val itemList: List<Task>) : RecyclerView.Adapter<ItemA
 }
 
 
-class MainActivity : AppCompatActivity(), TaskDialogFragment.TaskEditListener {
+class MainActivity : AppCompatActivity(), TaskDialogFragment.TaskEditListener, ListDialogFragment.ListEditorListener {
     lateinit var navigationView: NavigationView
     lateinit var drawerLayout: DrawerLayout
     lateinit var drawerToggle: ActionBarDrawerToggle
@@ -124,6 +124,9 @@ class MainActivity : AppCompatActivity(), TaskDialogFragment.TaskEditListener {
         fab.setOnClickListener{
             TaskDialogFragment().show(supportFragmentManager, "Task")
         }
+
+        taskModel.getListFromDb(this)
+        redrawLists()
     }
 
     override fun onTaskEdit(
@@ -139,5 +142,21 @@ class MainActivity : AppCompatActivity(), TaskDialogFragment.TaskEditListener {
         }
     }
 
+    override fun onListEdited(id: Int, title: String, icon: Int, colorId: Int, editing: Boolean) {
+        if(!editing){
+            taskModel.createList(title, icon, colorId)
+            //taskModel.getListFromDb(this)
+            redrawLists()
+        }
+    }
+
+    fun redrawLists(){
+        val listsMenu = navigationView.menu.findItem(R.id.listMenuDisplay).subMenu
+        listsMenu?.clear()
+        for (list in taskModel.lists){
+            val item = listsMenu?.add(0,list.id, 0, list.name)
+            item?.setIcon(list.icon)
+        }
+    }
 
 }

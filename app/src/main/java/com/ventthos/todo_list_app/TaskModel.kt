@@ -1,6 +1,11 @@
 package com.ventthos.todo_list_app
 
+import android.content.Context
 import androidx.lifecycle.ViewModel
+
+//Clase para los items dentro de el recicler view
+data class Task(val id: Int, var title: String, var notes: String = "", var importance: Int,
+                var date: String?, var completed: Boolean = false, var list: String? = null)
 
 class TaskModel: ViewModel() {
     //Aqui jalariamos los elementos de la base de datos para meterlos a una lista
@@ -17,6 +22,14 @@ class TaskModel: ViewModel() {
         Task(id = 10, title = "Limpiar la casa", notes = "Aspirar y ordenar las habitaciones", importance = 1, date = "2025-03-25")
     )
 
+    val listDb = mutableListOf(
+        TaskListDB(1, "Pendientes", 1, "programated")
+    )
+
+    val lists = mutableListOf<TaskList>(
+
+    )
+
     var taskAdapter = ItemAdapter(tasks)
 
    fun createTask(title: String, notes: String, importance: Int, date: String?){
@@ -24,8 +37,24 @@ class TaskModel: ViewModel() {
         if (date == "")
             finalDate = null
 
-        val newTask = Task(tasks.last().id+1, title, notes, importance, finalDate)
+        val newTask = Task(tasks.size, title, notes, importance, finalDate)
         tasks.add(newTask)
         taskAdapter.notifyDataSetChanged()
     }
+
+    fun getListFromDb(context: Context){
+        lists.clear()
+        for (x in listDb){
+            val photoId = context.resources.getIdentifier(x.icon, "drawable", context.packageName)
+            lists.add(TaskList(x.id, x.name, x.color, photoId))
+        }
+    }
+
+    fun createList(title: String, icon: Int, colorId: Int){
+        lists.add(
+            TaskList(lists.size, title, colorId, icon)
+        )
+    }
+
+
 }
