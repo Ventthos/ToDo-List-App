@@ -62,7 +62,6 @@ class ListDialogFragment : DialogFragment(), IconPicker.IconPickerListener{
 
     private fun sendValues(){
         val title = titleInput.text.toString()
-        val icon = currentIcon
         val color = spinner.selectedItem as? ColorObject
 
         listener?.onListEdited(id, title, currentIcon, color?.colorId?: basicColors.first().colorId, editing)
@@ -80,9 +79,9 @@ class ListDialogFragment : DialogFragment(), IconPicker.IconPickerListener{
 
             // Bindings
             iconChangerButton.setOnClickListener {
-                IconPicker().apply {
-                    setListener(this@ListDialogFragment)
-                }.show(parentFragmentManager, "IconPicker")
+                val iconPicker = IconPicker()
+                iconPicker.setTargetFragment(this, 0) // Asigna el fragmento padre como "target"
+                iconPicker.show(parentFragmentManager, "IconPicker")
             }
 
             if(savedInstanceState != null){
@@ -135,9 +134,12 @@ class ListDialogFragment : DialogFragment(), IconPicker.IconPickerListener{
     }
 
     override fun onIconSelected(id: Int){
+        if(id == -1)
+            return
+
         iconChangerButton.setImageResource(id)
         currentIcon = id
-        Log.i("COLOOORRR", spinner.selectedItem.toString())
+
     }
 
     override fun onSaveInstanceState(outState: Bundle) {

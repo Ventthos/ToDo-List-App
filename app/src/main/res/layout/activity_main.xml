@@ -40,7 +40,8 @@
                 android:fontFamily="@font/gelasio"
                 android:text="@string/allVista"
                 android:textColor="@color/white"
-                android:textSize="21sp" />
+                android:textSize="21sp"
+                android:id="@+id/pageTitle"/>
         </FrameLayout>
 
         <androidx.coordinatorlayout.widget.CoordinatorLayout

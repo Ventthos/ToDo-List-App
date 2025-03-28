@@ -30,6 +30,11 @@ class IconPicker: DialogFragment(){
         fun onIconSelected(id:Int)
     }
 
+    override fun onAttach(context: Context) {
+        super.onAttach(context)
+        listener = targetFragment as? IconPickerListener
+    }
+
     private var listener: IconPickerListener? = null
 
     fun setListener(listener: IconPickerListener) {

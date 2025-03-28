@@ -1,7 +1,11 @@
 package com.ventthos.todo_list_app
 
+import android.R.id
 import android.content.Context
+import android.util.Log
 import androidx.lifecycle.ViewModel
+import androidx.recyclerview.widget.RecyclerView
+
 
 //Clase para los items dentro de el recicler view
 data class Task(val id: Int, var title: String, var notes: String = "", var importance: Int,
@@ -9,7 +13,7 @@ data class Task(val id: Int, var title: String, var notes: String = "", var impo
 
 class TaskModel: ViewModel() {
     //Aqui jalariamos los elementos de la base de datos para meterlos a una lista
-    val tasks = mutableListOf(
+    private val tasks = mutableListOf(
         Task(id = 1, title = "Comprar leche", notes = "Ir al supermercado", importance = 2, date = "2025-03-24"),
         Task(id = 2, title = "Estudiar Kotlin", notes = "Repasar funciones de extensión y lambdas", importance = 3, date = "2025-03-25"),
         Task(id = 3, title = "Llamar a mamá", notes = "Preguntar cómo está", importance = 1, date = "2025-03-24"),
@@ -22,15 +26,19 @@ class TaskModel: ViewModel() {
         Task(id = 10, title = "Limpiar la casa", notes = "Aspirar y ordenar las habitaciones", importance = 1, date = "2025-03-25")
     )
 
-    val listDb = mutableListOf(
-        TaskListDB(1, "Pendientes", 1, "programated")
+    var filteredTasks: MutableList<Task> = tasks
+
+    private val listDb = mutableListOf(
+        TaskListDB(1, "Pendientes", 1, "time")
     )
 
     val lists = mutableListOf<TaskList>(
 
     )
 
-    var taskAdapter = ItemAdapter(tasks)
+    lateinit var taskAdapter: ItemAdapter
+
+    var currentPage = -1
 
    fun createTask(title: String, notes: String, importance: Int, date: String?){
        var finalDate = date
@@ -40,6 +48,40 @@ class TaskModel: ViewModel() {
         val newTask = Task(tasks.size, title, notes, importance, finalDate)
         tasks.add(newTask)
         taskAdapter.notifyDataSetChanged()
+   }
+
+    fun clearFilters(recyclerView: RecyclerView){
+        filteredTasks = tasks.filter {!it.completed }.toMutableList()
+        taskAdapter.updateList(filteredTasks, recyclerView)
+    }
+
+    fun filtrateImportants(recyclerView: RecyclerView){
+        filteredTasks = tasks.filter { it.importance > 0 && !it.completed }.sortedByDescending { it.importance }.toMutableList()
+        taskAdapter.updateList(filteredTasks, recyclerView)
+
+    }
+
+    fun filtratePlanned(recyclerView: RecyclerView){
+        filteredTasks = tasks.filter { it.date !== null && !it.completed}.sortedBy { it.date }.toMutableList()
+        taskAdapter.updateList(filteredTasks,recyclerView)
+    }
+
+    fun filtrateCompleted(recyclerView: RecyclerView){
+        filteredTasks = tasks.filter {it.completed}.toMutableList()
+        taskAdapter.updateList(filteredTasks, recyclerView)
+    }
+
+    fun changeCompleted(id:Int, completed: Boolean){
+        Log.i("Actualizando", "Cambió el estado")
+        val task = tasks.first { it.id == id }
+        task.completed = completed
+    }
+
+    fun createList(title: String, icon: Int, colorId: Int, context: Context){
+        val resourceName: String = context.resources.getResourceEntryName(icon)
+        listDb.add(
+            TaskListDB(lists.size, title, colorId, resourceName)
+        )
     }
 
     fun getListFromDb(context: Context){
@@ -49,12 +91,5 @@ class TaskModel: ViewModel() {
             lists.add(TaskList(x.id, x.name, x.color, photoId))
         }
     }
-
-    fun createList(title: String, icon: Int, colorId: Int){
-        lists.add(
-            TaskList(lists.size, title, colorId, icon)
-        )
-    }
-
 
 }
