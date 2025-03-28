@@ -6,12 +6,12 @@ val blackHex = "000000"
 var whiteHex = "FFFFFF"
 
 var basicColors = listOf(
-    ColorObject(1, "Rojo", "be2525", "FBD6D6", whiteHex),
-    ColorObject(2, "Naranja", "e47421", "fbe5c8", whiteHex),
-    ColorObject(3, "Amarillo", "efea00", "f8fbc8", whiteHex),
-    ColorObject(4, "Verde", "14bd02", "d4fbc8", whiteHex),
-    ColorObject(5, "Azul", "18578a", "C8E2FA", whiteHex),
-    ColorObject(6, "Morado", "8702bd", "dccff7", whiteHex)
+    ColorObject(0, "Rojo", "be2525", "FBD6D6", whiteHex),
+    ColorObject(1, "Naranja", "e47421", "fbe5c8", whiteHex),
+    ColorObject(2, "Amarillo", "efea00", "f8fbc8", whiteHex),
+    ColorObject(3, "Verde", "14bd02", "d4fbc8", whiteHex),
+    ColorObject(4, "Azul", "18578a", "C8E2FA", whiteHex),
+    ColorObject(5, "Morado", "8702bd", "dccff7", whiteHex)
 )
 
 class ColorList {

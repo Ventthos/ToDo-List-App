@@ -5,7 +5,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    
+
     android:layout_marginBottom="10dp">
 
 
@@ -20,7 +20,8 @@
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
             android:background="@color/mainColor"
-            android:gravity="center">
+            android:gravity="center"
+            android:id="@+id/checkContainer">
 
             <CheckBox
                 android:layout_width="wrap_content"
@@ -34,9 +35,9 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:orientation="vertical"
-            android:paddingHorizontal="20dp"
+            android:paddingHorizontal="16dp"
             android:paddingVertical="6dp"
-            >
+            android:id="@+id/infoContainer">
 
             <LinearLayout
                 android:layout_width="wrap_content"
@@ -68,7 +69,6 @@
             <androidx.cardview.widget.CardView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:backgroundTint="@color/mainColor"
                 app:contentPadding="6dp"
                 app:cardCornerRadius="20dp"
                 android:id="@+id/datContainer">

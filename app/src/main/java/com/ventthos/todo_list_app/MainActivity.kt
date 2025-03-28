@@ -1,10 +1,12 @@
 package com.ventthos.todo_list_app
 
 import android.os.Bundle
+import android.util.Log
 import android.widget.TextView
 import androidx.activity.viewModels
 import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.app.AppCompatActivity
+import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.content.ContextCompat
 import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout
@@ -12,6 +14,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.navigation.NavigationView
+import com.google.android.material.snackbar.Snackbar
 
 
 interface OnTaskCheckedChangeListener {
@@ -27,6 +30,7 @@ class MainActivity : AppCompatActivity(), TaskDialogFragment.TaskEditListener, L
     lateinit var fab: FloatingActionButton
     lateinit var recyclerView: RecyclerView
     lateinit var pageTitle: TextView
+    lateinit var coordinatorLayout: CoordinatorLayout
 
     private val taskModel: TaskModel by viewModels()
 
@@ -34,7 +38,7 @@ class MainActivity : AppCompatActivity(), TaskDialogFragment.TaskEditListener, L
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         //Logica del reciclerView
-        recyclerView = findViewById(R.id.reciclerView)
+        recyclerView = findViewById(R.id.recyclerView)
         recyclerView.layoutManager = LinearLayoutManager(this)
 
         taskModel.taskAdapter = ItemAdapter(taskModel.filteredTasks.toMutableList(), this)
@@ -49,6 +53,7 @@ class MainActivity : AppCompatActivity(), TaskDialogFragment.TaskEditListener, L
         toolbar = findViewById(R.id.toolbar)
         fab = findViewById(R.id.fab)
         pageTitle = findViewById(R.id.pageTitle)
+        coordinatorLayout = findViewById(R.id.coordinatorLayout)
 
         // Drawer configuration
         drawerToggle = ActionBarDrawerToggle(this, drawerLayout, toolbar, R.string.openDrawerDesc, R.string.closeDrawerDesc)
@@ -73,8 +78,11 @@ class MainActivity : AppCompatActivity(), TaskDialogFragment.TaskEditListener, L
                 R.id.nav_completed->{
                     taskModel.currentPage = -4
                 }
+                else->{
+                    taskModel.currentPage = menuItem.itemId
+                }
             }
-            pageTitle.text = menuItem.title
+            changePageStyles()
             runFilters()
             drawerLayout.closeDrawer(GravityCompat.START)
             true
@@ -85,7 +93,31 @@ class MainActivity : AppCompatActivity(), TaskDialogFragment.TaskEditListener, L
         }
 
         taskModel.getListFromDb(this)
+
+        changePageStyles()
         redrawLists()
+    }
+
+    fun changePageStyles(){
+        Log.i("llamado con", "${taskModel.currentPage}")
+        when (taskModel.currentPage) {
+            -1 ->{
+                pageTitle.setText(R.string.allVista)
+            }
+            -2 ->{
+                pageTitle.setText(R.string.importantVista)
+            }
+            -3 ->{
+                pageTitle.setText(R.string.plannedVista)
+            }
+            -4 -> {
+                pageTitle.setText(R.string.completedVista)
+            }
+            else->{
+                val list = taskModel.lists.first { it.id == taskModel.currentPage }
+                pageTitle.text = list.name
+            }
+        }
     }
 
     override fun onTaskEdit(
@@ -133,6 +165,9 @@ class MainActivity : AppCompatActivity(), TaskDialogFragment.TaskEditListener, L
             -4 -> {
                 taskModel.filtrateCompleted(recyclerView)
             }
+            else ->{
+                taskModel.filterByList(recyclerView)
+            }
         }
 
     }
@@ -140,5 +175,12 @@ class MainActivity : AppCompatActivity(), TaskDialogFragment.TaskEditListener, L
     override fun onTaskCheckedChanged(task: Task, isChecked: Boolean) {
         taskModel.changeCompleted(task.id, isChecked)
         runFilters()
+        if(isChecked){
+            val snackbar = Snackbar.make(coordinatorLayout, R.string.completedConfirmation, Snackbar.LENGTH_LONG)
+                .setAction(R.string.cancel){onTaskCheckedChanged(task, false)}
+            snackbar.show()
+        }
+
+
     }
 }

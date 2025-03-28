@@ -32,5 +32,7 @@
     <string name="taskImportance">Nivel de importancia</string>
     <string name="taskDateLimit">Fecha de vencimiento</string>
     <string name="save">Guardar</string>
+    <string name="cancel">Cancelar</string>
+    <string name="completedConfirmation">Se ha marcado la tarea como completada</string>
 
 </resources>

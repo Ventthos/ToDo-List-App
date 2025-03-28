@@ -1,5 +1,6 @@
 package com.ventthos.todo_list_app
 
+import android.graphics.Color
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -23,6 +24,8 @@ class ItemAdapter(private val itemList: MutableList<Task>,
         val completed: CheckBox = view.findViewById(R.id.taskCompleted)
         val starsContainer: LinearLayout = view.findViewById(R.id.starsContainer)
         val dateContainer: CardView = view.findViewById(R.id.datContainer)
+        val infoContainer: LinearLayout = view.findViewById(R.id.infoContainer)
+        val checkBoxContainer: LinearLayout = view.findViewById(R.id.checkContainer)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ItemViewHolder {
@@ -47,6 +50,7 @@ class ItemAdapter(private val itemList: MutableList<Task>,
             holder.dateContainer.visibility = View.GONE
         }
 
+
         holder.starsContainer.removeAllViews()
         for (i in 0 until  item.importance){
             val starView = inflater.inflate(R.layout.star, holder.starsContainer, false)
@@ -57,6 +61,13 @@ class ItemAdapter(private val itemList: MutableList<Task>,
             Log.i("Actualizando check", "Han dado clic")
             listener.onTaskCheckedChanged(item, isChecked)
         }
+
+        // Color settings
+        val color = basicColors[item.colorId]
+        val mainColor = Color.parseColor(color.hexHash)
+        holder.infoContainer.setBackgroundColor(Color.parseColor(color.hexBackgroundHash))
+        holder.checkBoxContainer.setBackgroundColor(mainColor)
+        holder.dateContainer.setCardBackgroundColor(mainColor)
     }
 
     override fun getItemCount() = itemList.size
