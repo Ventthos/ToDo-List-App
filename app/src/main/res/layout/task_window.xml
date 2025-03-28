@@ -99,7 +99,9 @@
                     android:id="@+id/dateSelector"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:inputType="date"/>
+                    android:inputType="date"
+                    android:focusable="false"
+                    android:clickable="true"/>
             </LinearLayout>
         </LinearLayout>
 

@@ -1,15 +1,17 @@
 package com.ventthos.todo_list_app
 
 import android.app.AlertDialog
+import android.app.DatePickerDialog
 import android.app.Dialog
 import android.content.Context
 import android.os.Bundle
+import android.util.Log
 import android.widget.ArrayAdapter
 import android.widget.EditText
 import android.widget.Spinner
 import androidx.fragment.app.DialogFragment
 
-class TaskDialogFragment: DialogFragment()  {
+class TaskDialogFragment: DialogFragment(), DateDialogFragment.DatePickerListener  {
 
     private lateinit var titleInput: EditText
     private lateinit var notesInput: EditText
@@ -35,7 +37,7 @@ class TaskDialogFragment: DialogFragment()  {
     private fun sendValues(){
         val title = titleInput.text.toString()
         val notes = notesInput.text.toString()
-        val importance = importanceSelector.selectedItem as? Int ?: 0
+        val importance = importanceSelector.selectedItemPosition
         val date = dateSelector.text.toString()
         listener?.onTaskEdit(id, title, notes,importance,date,editing)
     }
@@ -84,8 +86,17 @@ class TaskDialogFragment: DialogFragment()  {
             importanceSelector = dialogView.findViewById(R.id.importanceSpinner)
             dateSelector = dialogView.findViewById(R.id.dateSelector)
 
+            // binds
+            dateSelector.setOnClickListener {
+                val iconPicker = DateDialogFragment()
+                iconPicker.setTargetFragment(this, 0)
+                iconPicker.show(parentFragmentManager, "DatePicker")
+            }
+
             // Spinner config
-            val adapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, arrayOf(0,1,2,3,4))
+            val importance = resources.getStringArray(R.array.importanceArrayOptions)
+            val adapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item,  importance)
+
             adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
             importanceSelector.adapter = adapter
 
@@ -121,8 +132,15 @@ class TaskDialogFragment: DialogFragment()  {
         outState.putInt(IDTAG, id)
         outState.putString(TITLETAG, titleInput.text.toString())
         outState.putString(NOTESTAG, notesInput.text.toString())
-        outState.putInt(IMPORTANCETAG, importanceSelector.selectedItem as? Int ?: 0)
+
+        outState.putInt(IMPORTANCETAG, importanceSelector.selectedItemPosition)
         outState.putString(DATETAG, dateSelector.text.toString())
         outState.putBoolean(EDITINGTAG, editing)
+    }
+
+    override fun onDateSelected(year: Int, month: Int, day: Int) {
+        val finalDay = if(day < 10) "0${day}" else day
+        val finalMonth = if(month < 10) "0${month}" else month
+        dateSelector.setText("${year}-${finalMonth}-${finalDay}")
     }
 }

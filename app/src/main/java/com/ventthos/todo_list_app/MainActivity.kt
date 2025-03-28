@@ -2,6 +2,7 @@ package com.ventthos.todo_list_app
 
 import android.os.Bundle
 import android.util.Log
+import android.view.View
 import android.widget.TextView
 import androidx.activity.viewModels
 import androidx.appcompat.app.ActionBarDrawerToggle
@@ -9,6 +10,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.content.ContextCompat
 import androidx.core.view.GravityCompat
+import androidx.core.view.isEmpty
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -99,7 +101,6 @@ class MainActivity : AppCompatActivity(), TaskDialogFragment.TaskEditListener, L
     }
 
     fun changePageStyles(){
-        Log.i("llamado con", "${taskModel.currentPage}")
         when (taskModel.currentPage) {
             -1 ->{
                 pageTitle.setText(R.string.allVista)
@@ -118,6 +119,17 @@ class MainActivity : AppCompatActivity(), TaskDialogFragment.TaskEditListener, L
                 pageTitle.text = list.name
             }
         }
+
+        if(taskModel.currentPage <0 && toolbar.menu.hasVisibleItems()){
+            toolbar.menu.clear()
+            fab.visibility = View.GONE
+            return
+        }
+        else if(taskModel.currentPage >=0 && !toolbar.menu.hasVisibleItems()){
+            toolbar.inflateMenu(R.menu.lista_menu)
+            fab.visibility = View.VISIBLE
+        }
+
     }
 
     override fun onTaskEdit(
@@ -129,7 +141,7 @@ class MainActivity : AppCompatActivity(), TaskDialogFragment.TaskEditListener, L
         editing: Boolean
     ) {
         if(!editing){
-            taskModel.createTask(title, notes, importance, date)
+            taskModel.createTask(title, notes, importance, date, taskModel.currentPage)
         }
         runFilters()
     }

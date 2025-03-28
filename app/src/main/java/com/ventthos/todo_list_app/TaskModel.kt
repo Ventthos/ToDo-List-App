@@ -16,7 +16,7 @@ class TaskModel: ViewModel() {
     private val tasks = mutableListOf(
         Task(id = 1, title = "Comprar leche", notes = "Ir al supermercado", importance = 2, date = "2025-03-24", listId = 1, colorId = 0),
         Task(id = 2, title = "Estudiar Kotlin", notes = "Repasar funciones de extensión y lambdas", importance = 3, date = "2025-03-25", listId = 1, colorId = 0),
-        Task(id = 3, title = "Llamar a mamá", notes = "Preguntar cómo está", importance = 1, date = "2025-03-24", listId = 2, colorId = 2),
+        Task(id = 3, title = "Llamar a mamá", notes = "Preguntar cómo está", importance = 1, date = "2025-03-24", listId = 2, colorId = 1),
         Task(id = 4, title = "Preparar presentación", notes = "Revisar las diapositivas", importance = 4, date = "2025-03-26", listId = 1, colorId = 0),
         Task(id = 5, title = "Hacer ejercicio", notes = "Correr 5 km en el parque", importance = 2, date = "2025-03-27", listId = 1, colorId = 0),
         Task(id = 6, title = "Pagar factura de luz", notes = "Realizar pago online", importance = 3, date = "2025-03-28", listId = 1, colorId = 0),
@@ -40,12 +40,15 @@ class TaskModel: ViewModel() {
 
     var currentPage = -1
 
-   fun createTask(title: String, notes: String, importance: Int, date: String?){
+   fun createTask(title: String, notes: String, importance: Int, date: String?, listId: Int){
        var finalDate = date
         if (date == "")
             finalDate = null
 
-        val newTask = Task(tasks.size, title, notes, importance, finalDate)
+       val colorId = lists.first { it.id == listId }.color
+       val newTask = Task(tasks.size+1, title, notes, importance, finalDate, false, listId, colorId)
+
+
         tasks.add(newTask)
         taskAdapter.notifyDataSetChanged()
    }
@@ -72,9 +75,9 @@ class TaskModel: ViewModel() {
     }
 
     fun changeCompleted(id:Int, completed: Boolean){
-        Log.i("Actualizando", "Cambió el estado")
         val task = tasks.first { it.id == id }
         task.completed = completed
+        taskAdapter.notifyDataSetChanged()
     }
 
     fun createList(title: String, icon: Int, colorId: Int, context: Context){

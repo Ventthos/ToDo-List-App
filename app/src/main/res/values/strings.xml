@@ -35,4 +35,13 @@
     <string name="cancel">Cancelar</string>
     <string name="completedConfirmation">Se ha marcado la tarea como completada</string>
 
+    <string name="saveDate">Guardar fecha</string>
+
+    <array name="importanceArrayOptions">
+        <item>No asignada</item>
+        <item>Baja</item>
+        <item>Normal</item>
+        <item>Alta</item>
+    </array>
+
 </resources>

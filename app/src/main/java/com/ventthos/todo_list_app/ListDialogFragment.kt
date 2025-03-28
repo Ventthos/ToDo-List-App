@@ -80,7 +80,7 @@ class ListDialogFragment : DialogFragment(), IconPicker.IconPickerListener{
             // Bindings
             iconChangerButton.setOnClickListener {
                 val iconPicker = IconPicker()
-                iconPicker.setTargetFragment(this, 0) // Asigna el fragmento padre como "target"
+                iconPicker.setTargetFragment(this, 0)
                 iconPicker.show(parentFragmentManager, "IconPicker")
             }
 

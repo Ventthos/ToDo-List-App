@@ -58,7 +58,6 @@ class ItemAdapter(private val itemList: MutableList<Task>,
         }
 
         holder.completed.setOnCheckedChangeListener { _, isChecked ->
-            Log.i("Actualizando check", "Han dado clic")
             listener.onTaskCheckedChanged(item, isChecked)
         }
 

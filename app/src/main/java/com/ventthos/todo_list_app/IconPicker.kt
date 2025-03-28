@@ -37,10 +37,6 @@ class IconPicker: DialogFragment(){
 
     private var listener: IconPickerListener? = null
 
-    fun setListener(listener: IconPickerListener) {
-        this.listener = listener
-    }
-
     private lateinit var recyclerView: RecyclerView
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         return activity?.let {
@@ -64,7 +60,6 @@ class IconPicker: DialogFragment(){
     }
 
     fun selectedIcon(id: Int){
-        Log.i("muajajaja2", "Si")
         listener?.onIconSelected(id)
         dialog?.dismiss()
     }
