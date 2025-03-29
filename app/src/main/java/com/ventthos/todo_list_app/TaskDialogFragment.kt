@@ -9,6 +9,7 @@ import android.util.Log
 import android.widget.ArrayAdapter
 import android.widget.EditText
 import android.widget.Spinner
+import android.widget.TextView
 import androidx.fragment.app.DialogFragment
 
 class TaskDialogFragment: DialogFragment(), DateDialogFragment.DatePickerListener  {
@@ -17,6 +18,7 @@ class TaskDialogFragment: DialogFragment(), DateDialogFragment.DatePickerListene
     private lateinit var notesInput: EditText
     private lateinit var importanceSelector: Spinner
     private lateinit var dateSelector: EditText
+    private lateinit var windowTitle: TextView
 
     private val IDTAG = "TaskId"
     private val TITLETAG = "TitleSelected"
@@ -85,6 +87,7 @@ class TaskDialogFragment: DialogFragment(), DateDialogFragment.DatePickerListene
             notesInput = dialogView.findViewById(R.id.notesInput)
             importanceSelector = dialogView.findViewById(R.id.importanceSpinner)
             dateSelector = dialogView.findViewById(R.id.dateSelector)
+            windowTitle = dialogView.findViewById(R.id.taskWindowTitle)
 
             // binds
             dateSelector.setOnClickListener {
@@ -106,6 +109,8 @@ class TaskDialogFragment: DialogFragment(), DateDialogFragment.DatePickerListene
                 importanceSelector.setSelection(savedInstanceState.getInt(IMPORTANCETAG, 0))
                 dateSelector.setText(savedInstanceState.getString(DATETAG, ""))
                 editing = savedInstanceState.getBoolean(EDITINGTAG)
+
+
             }
             else {
                 // Cargar valores iniciales desde argumentos
@@ -118,6 +123,9 @@ class TaskDialogFragment: DialogFragment(), DateDialogFragment.DatePickerListene
                     editing = true
                 }
             }
+
+            if(editing)
+                windowTitle.setText(R.string.editTask)
 
             builder.setView(dialogView)
                 .setPositiveButton(R.string.save){_,_->
@@ -136,6 +144,7 @@ class TaskDialogFragment: DialogFragment(), DateDialogFragment.DatePickerListene
         outState.putInt(IMPORTANCETAG, importanceSelector.selectedItemPosition)
         outState.putString(DATETAG, dateSelector.text.toString())
         outState.putBoolean(EDITINGTAG, editing)
+
     }
 
     override fun onDateSelected(year: Int, month: Int, day: Int) {

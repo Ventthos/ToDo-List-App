@@ -34,6 +34,7 @@
     <item android:title="@string/editList"
         android:icon="@drawable/edit"
         app:showAsAction="ifRoom"
-        android:iconTint="@color/white"/>
+        android:iconTint="@color/white"
+        android:id="@+id/editList_nav"/>
 
 </menu>

@@ -2,6 +2,8 @@ package com.ventthos.todo_list_app
 
 import android.os.Bundle
 import android.util.Log
+import android.view.Menu
+import android.view.MenuItem
 import android.view.View
 import android.widget.TextView
 import androidx.activity.viewModels
@@ -23,8 +25,11 @@ interface OnTaskCheckedChangeListener {
     fun onTaskCheckedChanged(task: Task, isChecked: Boolean)
 }
 
+interface OnTaskClickForEditListener{
+    fun OnTaskClickForEdit(task: Task)
+}
 
-class MainActivity : AppCompatActivity(), TaskDialogFragment.TaskEditListener, ListDialogFragment.ListEditorListener, OnTaskCheckedChangeListener {
+class MainActivity : AppCompatActivity(), TaskDialogFragment.TaskEditListener, ListDialogFragment.ListEditorListener, OnTaskCheckedChangeListener, OnTaskClickForEditListener {
     lateinit var navigationView: NavigationView
     lateinit var drawerLayout: DrawerLayout
     lateinit var drawerToggle: ActionBarDrawerToggle
@@ -43,7 +48,7 @@ class MainActivity : AppCompatActivity(), TaskDialogFragment.TaskEditListener, L
         recyclerView = findViewById(R.id.recyclerView)
         recyclerView.layoutManager = LinearLayoutManager(this)
 
-        taskModel.taskAdapter = ItemAdapter(taskModel.filteredTasks.toMutableList(), this)
+        taskModel.taskAdapter = ItemAdapter(taskModel.filteredTasks.toMutableList(), this, this)
         recyclerView.adapter = taskModel.taskAdapter
         //termina logia del recicler view
 
@@ -56,6 +61,8 @@ class MainActivity : AppCompatActivity(), TaskDialogFragment.TaskEditListener, L
         fab = findViewById(R.id.fab)
         pageTitle = findViewById(R.id.pageTitle)
         coordinatorLayout = findViewById(R.id.coordinatorLayout)
+
+        setSupportActionBar(findViewById(R.id.toolbar))
 
         // Drawer configuration
         drawerToggle = ActionBarDrawerToggle(this, drawerLayout, toolbar, R.string.openDrawerDesc, R.string.closeDrawerDesc)
@@ -90,13 +97,14 @@ class MainActivity : AppCompatActivity(), TaskDialogFragment.TaskEditListener, L
             true
         }
 
+
         fab.setOnClickListener{
             TaskDialogFragment().show(supportFragmentManager, "Task")
         }
 
         taskModel.getListFromDb(this)
 
-        changePageStyles()
+        runFilters()
         redrawLists()
     }
 
@@ -121,12 +129,17 @@ class MainActivity : AppCompatActivity(), TaskDialogFragment.TaskEditListener, L
         }
 
         if(taskModel.currentPage <0 && toolbar.menu.hasVisibleItems()){
-            toolbar.menu.clear()
+
+            for (i in 0 until toolbar.menu.size()) {
+                toolbar.menu.getItem(i).isVisible = false
+            }
             fab.visibility = View.GONE
             return
         }
         else if(taskModel.currentPage >=0 && !toolbar.menu.hasVisibleItems()){
-            toolbar.inflateMenu(R.menu.lista_menu)
+            for (i in 0 until toolbar.menu.size()) {
+                toolbar.menu.getItem(i).isVisible = true
+            }
             fab.visibility = View.VISIBLE
         }
 
@@ -143,12 +156,21 @@ class MainActivity : AppCompatActivity(), TaskDialogFragment.TaskEditListener, L
         if(!editing){
             taskModel.createTask(title, notes, importance, date, taskModel.currentPage)
         }
+        else{
+            taskModel.editTask(id, title, notes, importance,date)
+        }
         runFilters()
     }
 
     override fun onListEdited(id: Int, title: String, icon: Int, colorId: Int, editing: Boolean) {
         if(!editing){
             taskModel.createList(title, icon, colorId, this)
+            taskModel.getListFromDb(this)
+            redrawLists()
+        }
+        else{
+            Log.i("Me dan:", colorId.toString())
+            taskModel.editList(id, title, icon, colorId, this)
             taskModel.getListFromDb(this)
             redrawLists()
         }
@@ -192,7 +214,27 @@ class MainActivity : AppCompatActivity(), TaskDialogFragment.TaskEditListener, L
                 .setAction(R.string.cancel){onTaskCheckedChanged(task, false)}
             snackbar.show()
         }
+    }
 
+    override fun OnTaskClickForEdit(task: Task) {
+        TaskDialogFragment.setArguments(task.id, task.title, task.notes, task.importance, task.date)
+            .show(supportFragmentManager, "TaskEdit")
 
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        menuInflater.inflate(R.menu.lista_menu, menu)
+        changePageStyles()
+        return true
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean = when(item.itemId){
+        R.id.editList_nav->{
+            val list = taskModel.lists.first { it.id == taskModel.currentPage }
+            ListDialogFragment.setArguments(list.id, list.name, list.icon, list.color).show(supportFragmentManager,"EditList")
+            true
+        }
+
+        else -> super.onOptionsItemSelected(item)
     }
 }
