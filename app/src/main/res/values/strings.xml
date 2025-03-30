@@ -36,7 +36,6 @@
     <string name="completedConfirmation">Se ha marcado la tarea como completada</string>
 
     <string name="saveDate">Guardar fecha</string>
-    <string name="default_notification_channel_id">huh</string>
 
     <array name="importanceArrayOptions">
         <item>No asignada</item>
