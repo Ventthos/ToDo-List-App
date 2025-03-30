@@ -19,11 +19,17 @@ import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.navigation.NavigationView
 import com.google.android.material.snackbar.Snackbar
-
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
 
 interface OnTaskCheckedChangeListener {
     fun onTaskCheckedChanged(task: Task, isChecked: Boolean)
 }
+data class User(
+    val id: String = "",
+    val name: String = "",
+    val email: String = ""
+)
 
 interface OnTaskClickForEditListener{
     fun OnTaskClickForEdit(task: Task)
@@ -38,12 +44,21 @@ class MainActivity : AppCompatActivity(), TaskDialogFragment.TaskEditListener, L
     lateinit var recyclerView: RecyclerView
     lateinit var pageTitle: TextView
     lateinit var coordinatorLayout: CoordinatorLayout
+    private lateinit var auth: FirebaseAuth
+    private lateinit var db: FirebaseFirestore
 
     private val taskModel: TaskModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+        //Logica firebase
+        auth = FirebaseAuth.getInstance()
+        db = FirebaseFirestore.getInstance()
+
+        saveUser()
+        //termina logica firebase
+
         //Logica del reciclerView
         recyclerView = findViewById(R.id.recyclerView)
         recyclerView.layoutManager = LinearLayoutManager(this)
@@ -107,7 +122,20 @@ class MainActivity : AppCompatActivity(), TaskDialogFragment.TaskEditListener, L
         runFilters()
         redrawLists()
     }
+    fun saveUser() {
+        val db = FirebaseFirestore.getInstance()
+        val user = User(id = "1", name = "Víctor", email = "victor@gmail.com")
 
+        db.collection("users") // Nombre de la colección
+            .document(user.id) // ID del documento
+            .set(user) // Guardar el objeto
+            .addOnSuccessListener {
+                println("Usuario guardado correctamente")
+            }
+            .addOnFailureListener { e ->
+                println("Error al guardar usuario: ${e.message}")
+            }
+    }
     fun changePageStyles(){
         when (taskModel.currentPage) {
             -1 ->{
