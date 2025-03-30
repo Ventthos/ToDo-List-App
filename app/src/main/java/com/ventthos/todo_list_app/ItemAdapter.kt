@@ -13,7 +13,8 @@ import androidx.recyclerview.widget.RecyclerView
 
 //Adaptador para la clase Item
 class ItemAdapter(private val itemList: MutableList<Task>,
-                  private val listener: OnTaskCheckedChangeListener
+                  private val listener: OnTaskCheckedChangeListener,
+                  private val listenerClick: OnTaskClickForEditListener
 ) : RecyclerView.Adapter<ItemAdapter.ItemViewHolder>() {
 
     lateinit var inflater: LayoutInflater
@@ -26,6 +27,7 @@ class ItemAdapter(private val itemList: MutableList<Task>,
         val dateContainer: CardView = view.findViewById(R.id.datContainer)
         val infoContainer: LinearLayout = view.findViewById(R.id.infoContainer)
         val checkBoxContainer: LinearLayout = view.findViewById(R.id.checkContainer)
+        val cardRoot: CardView = view.findViewById(R.id.taskRoot)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ItemViewHolder {
@@ -67,6 +69,11 @@ class ItemAdapter(private val itemList: MutableList<Task>,
         holder.infoContainer.setBackgroundColor(Color.parseColor(color.hexBackgroundHash))
         holder.checkBoxContainer.setBackgroundColor(mainColor)
         holder.dateContainer.setCardBackgroundColor(mainColor)
+
+        // Edit
+        holder.cardRoot.setOnClickListener{
+            listenerClick.OnTaskClickForEdit(item)
+        }
     }
 
     override fun getItemCount() = itemList.size

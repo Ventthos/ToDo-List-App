@@ -17,10 +17,10 @@ class TaskModel: ViewModel() {
         Task(id = 1, title = "Comprar leche", notes = "Ir al supermercado", importance = 2, date = "2025-03-24", listId = 1, colorId = 0),
         Task(id = 2, title = "Estudiar Kotlin", notes = "Repasar funciones de extensión y lambdas", importance = 3, date = "2025-03-25", listId = 1, colorId = 0),
         Task(id = 3, title = "Llamar a mamá", notes = "Preguntar cómo está", importance = 1, date = "2025-03-24", listId = 2, colorId = 1),
-        Task(id = 4, title = "Preparar presentación", notes = "Revisar las diapositivas", importance = 4, date = "2025-03-26", listId = 1, colorId = 0),
+        Task(id = 4, title = "Preparar presentación", notes = "Revisar las diapositivas", importance = 3, date = "2025-03-26", listId = 1, colorId = 0),
         Task(id = 5, title = "Hacer ejercicio", notes = "Correr 5 km en el parque", importance = 2, date = "2025-03-27", listId = 1, colorId = 0),
         Task(id = 6, title = "Pagar factura de luz", notes = "Realizar pago online", importance = 3, date = "2025-03-28", listId = 1, colorId = 0),
-        Task(id = 7, title = "Comprar regalo de cumpleaños", notes = "Buscar algo original", importance = 4, date = "2025-03-30", listId = 1, colorId = 0),
+        Task(id = 7, title = "Comprar regalo de cumpleaños", notes = "Buscar algo original", importance = 3, date = "2025-03-30", listId = 1, colorId = 0),
         Task(id = 8, title = "Revisar emails", notes = "Responder a correos urgentes", importance = 2, date = "2025-03-24", listId = 1, colorId = 0),
         Task(id = 9, title = "Ir al médico", notes = "Chequeo general anual", importance = 3, date = "2025-03-29", listId = 1, colorId = 0),
         Task(id = 10, title = "Limpiar la casa", notes = "Aspirar y ordenar las habitaciones", importance = 1, date = "2025-03-25", listId = 1, colorId = 0)
@@ -52,6 +52,33 @@ class TaskModel: ViewModel() {
         tasks.add(newTask)
         taskAdapter.notifyDataSetChanged()
    }
+
+    fun getChangedFieldsInTask(original: Task, updated: Task): Map<String, Any?> {
+        val changes = mutableMapOf<String, Any?>()
+
+        if (original.title != updated.title) changes["title"] = updated.title
+        if (original.notes != updated.notes) changes["notes"] = updated.notes
+        if (original.importance != updated.importance) changes["importance"] = updated.importance
+        if (original.date != updated.date) changes["date"] = updated.date
+        return changes
+    }
+
+    fun editTask(id:Int, title: String, notes: String, importance: Int, date: String?) {
+        val task = tasks.first { it.id == id }
+        val updatedTask = Task(id, title, notes, importance, date)
+
+        val changes = getChangedFieldsInTask(task, updatedTask)
+        Log.i("CAMBIOS HAY EN MIII", changes.toString())
+        changes.forEach { (key, value) ->
+            when (key) {
+                "title" -> task.title = value as String
+                "notes" -> task.notes = value as String
+                "importance" -> task.importance = value as Int
+                "date" -> task.date = value as String?
+                "completed" -> task.completed = value as Boolean
+            }
+        }
+    }
 
     fun clearFilters(recyclerView: RecyclerView){
         filteredTasks = tasks.filter {!it.completed }.toMutableList()
@@ -85,6 +112,34 @@ class TaskModel: ViewModel() {
         listDb.add(
             TaskListDB(lists.size+1, title, colorId, resourceName)
         )
+    }
+
+    fun getChangedFieldsInList(original: TaskList, updated: TaskList): Map<String, Any?> {
+        val changes = mutableMapOf<String, Any?>()
+
+        if (original.name != updated.name) changes["name"] = updated.name
+        if (original.icon != updated.icon) changes["icon"] = updated.icon
+        if (original.color != updated.color) changes["color"] = updated.color
+        return changes
+    }
+
+    fun editList(id: Int, name: String, icon: Int, colorId: Int, context: Context){
+        val oldList = lists.first { it.id == id }
+        val updatedList = TaskList(id, name, colorId, icon)
+
+        val listDb = listDb.first { it.id == id }
+
+        val changes = getChangedFieldsInList(oldList, updatedList)
+        Log.i("CAMBIOS HAY EN MIII", changes.toString())
+        val resourceName: String = context.resources.getResourceEntryName(icon)
+
+        changes.forEach { (key, value) ->
+            when (key) {
+                "name" -> listDb.name = value as String
+                "icon" -> listDb.icon = resourceName
+                "color" -> listDb.color = value as Int
+            }
+        }
     }
 
     fun getListFromDb(context: Context){

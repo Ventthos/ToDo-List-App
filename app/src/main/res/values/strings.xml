@@ -45,4 +45,6 @@
         <item>Alta</item>
     </array>
 
+    <string name="editTask">Editar tarea</string>
+
 </resources>

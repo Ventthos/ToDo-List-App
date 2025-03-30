@@ -33,8 +33,8 @@ class ListDialogFragment : DialogFragment(), IconPicker.IconPickerListener{
             title: String = "",
             currentIcon: Int,
             colorId: Int
-        ): TaskDialogFragment {
-            val fragment = TaskDialogFragment()
+        ): ListDialogFragment {
+            val fragment = ListDialogFragment()
             val args = Bundle()
 
             args.putInt("ID", id)
@@ -84,6 +84,8 @@ class ListDialogFragment : DialogFragment(), IconPicker.IconPickerListener{
                 iconPicker.show(parentFragmentManager, "IconPicker")
             }
 
+            loadColorSpinner()
+
             if(savedInstanceState != null){
                 titleInput.setText(savedInstanceState.getString(TITLETAG, ""))
                 id = savedInstanceState.getInt(IDTAG)
@@ -97,9 +99,9 @@ class ListDialogFragment : DialogFragment(), IconPicker.IconPickerListener{
                     titleInput.setText(arguments?.getString("TITLE", "") ?: "")
                     onIconSelected(arguments?.getInt("ICON", -1) ?: -1)
 
-                    val colorSelected = arguments?.getInt("COLORID", -1)
-                    val colorPosition = basicColors.indexOfFirst { it.colorId == colorSelected }
-                    spinner.setSelection(colorPosition)
+                    val colorSelected = arguments?.getInt("COLORID", -1) ?: 0
+                    Log.i("El color pasado es", colorSelected.toString())
+                    spinner.setSelection(colorSelected)
 
                     editing = true
                 }
@@ -111,7 +113,7 @@ class ListDialogFragment : DialogFragment(), IconPicker.IconPickerListener{
                     dialog?.dismiss()
                 }
 
-            loadColorSpinner()
+
 
             builder.create()
         } ?: throw IllegalStateException("Activity cannot be null")
