@@ -10,6 +10,7 @@ import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.cardview.widget.CardView
 import androidx.recyclerview.widget.RecyclerView
+import com.ventthos.todo_list_app.db.dataclasses.Task
 
 //Adaptador para la clase Item
 class ItemAdapter(private val itemList: MutableList<Task>,

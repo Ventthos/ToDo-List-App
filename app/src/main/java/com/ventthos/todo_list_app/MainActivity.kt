@@ -15,12 +15,17 @@ import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import androidx.room.Room
+import androidx.room.RoomDatabase
+import androidx.sqlite.db.SupportSQLiteDatabase
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.navigation.NavigationView
 import com.google.android.material.snackbar.Snackbar
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import com.ventthos.todo_list_app.db.AppDatabase.AppDatabase
 import com.ventthos.todo_list_app.db.dataclasses.Task
+import com.ventthos.todo_list_app.db.dataclasses.TaskList
 
 interface OnTaskCheckedChangeListener {
     fun onTaskCheckedChanged(task: Task, isChecked: Boolean)
@@ -48,33 +53,63 @@ class MainActivity : AppCompatActivity(), TaskDialogFragment.TaskEditListener, L
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         //Logica firebase
-        Firebase = Firebasesito()
-        Firebase.createUser("Vivi123","Victor", "Vivi","pass")
-        var lista = ""
-        Firebase.addList("Vivi123", "Lista", "1", 0) { listId ->
-            if (listId != null) {
-                lista = listId
-                Log.d("Firestore", "Lista creada con ID: $listId")
-            } else {
-                Log.e("Firestore", "Error al crear la lista")
-            }
+        //Firebase = Firebasesito()
+        //Firebase.createUser("Vivi123","Victor", "Vivi","pass")
+        //var lista = ""
+        //Firebase.addList("Vivi123", "Lista", "1", 0) { listId ->
+        //    if (listId != null) {
+        //        lista = listId
+        //        Log.d("Firestore", "Lista creada con ID: $listId")
+        //    } else {
+        //        Log.e("Firestore", "Error al crear la lista")
+        //    }
 
-        }
-        var tarea = ""
-        Firebase.addTask("Vivi123", lista,"Tarea1", "Hacer tarea 2", 3, "2025-10-1", 1) {
-            taskId ->
-            if (taskId != null) {
-                tarea = taskId
-                Log.d("Firestore", "Lista creada con ID: $taskId")
-            } else {
-                Log.e("Firestore", "Error al crear la lista")
-            }
-        }
+        //}
+        //var tarea = ""
+        //Firebase.addTask("Vivi123", lista,"Tarea1", "Hacer tarea 2", 3, "2025-10-1", 1) {
+        //    taskId ->
+        //    if (taskId != null) {
+        //        tarea = taskId
+        //        Log.d("Firestore", "Lista creada con ID: $taskId")
+        //    } else {
+        //        Log.e("Firestore", "Error al crear la lista")
+        //    }
+        //}
 
         //Firebase.addTask("Vivi123", lista, "Tarea1", "Añadir tarea 2", 1, "2025-6-10", 1 )
 
         //termina logica firebase
+        //Logica db
+        val db = Room.databaseBuilder(
+            applicationContext,
+            AppDatabase::class.java,
+            "library"
 
+        )
+            .allowMainThreadQueries()
+            .addCallback(object : RoomDatabase.Callback() {
+                override fun onCreate(db: SupportSQLiteDatabase) {
+                    super.onCreate(db)
+
+                    db.execSQL("INSERT INTO user(id, name, lastName, email, avatar) VALUES (1,'Victor', 'Ez Calante', 'correo@dominio.com', 1)")
+
+                }
+            })
+            .build()
+        val userDao = db.UserDao()
+        val taskListDao = db.TaskListDao()
+        val taskDao = db.TaskDao()
+
+        val users = userDao.getAllUsers()
+        val taskLists = taskListDao.getAllUsersList(1)
+        val insertTaskListId = taskLists.size + 1
+        taskListDao.addList(TaskList(insertTaskListId,"Tareas",1,"time",-1,users[0].id))
+        val tasks = taskDao.getAllListTasks(insertTaskListId)
+        val insertTaskId = tasks.size + 1
+        taskDao.addTask(Task(insertTaskId,"Hacer la db", "No se como aa", 3,"2025-06-25",false, insertTaskListId,1))
+
+
+        //termina logica db
         //Logica del reciclerView
         recyclerView = findViewById(R.id.recyclerView)
         recyclerView.layoutManager = LinearLayoutManager(this)

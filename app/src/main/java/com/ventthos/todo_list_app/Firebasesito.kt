@@ -3,6 +3,7 @@ package com.ventthos.todo_list_app
 import android.util.Log
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import com.ventthos.todo_list_app.db.dataclasses.Task
 
 data class User(
     val id: String = "",
@@ -63,12 +64,12 @@ class Firebasesito {
                 callback(null)
             }
     }
-    fun addTask(userId: String, listId: String, name: String,notas:String,importancia:Int, endDate: String, color: Int, callback: (String?) -> Unit) {
+    fun addTask(userId: Int, listId: Int, name: String,notas:String,importancia:Int, endDate: String, color: Int, callback: (String?) -> Unit) {
         val db = FirebaseFirestore.getInstance()
         val newTask = Task(id=userId, title=name,notes=notas, importance=importancia, date=endDate, listId=listId, colorId = color)
 
-        db.collection("users").document(userId)
-            .collection("lists").document(listId)
+        db.collection("users").document(userId.toString())
+            .collection("lists").document(listId.toString())
             .collection("tasks")
             .add(newTask)
             .addOnSuccessListener { documentReference ->
