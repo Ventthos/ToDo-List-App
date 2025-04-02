@@ -2,7 +2,6 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
-    id("com.google.gms.google-services")
     id("com.google.devtools.ksp")
 }
 
@@ -39,6 +38,7 @@ android {
 }
 
 dependencies {
+    implementation(libs.androidx.room.ktx)
     val room_version = "2.6.1"
     implementation("androidx.room:room-runtime:$room_version")
     ksp("androidx.room:room-compiler:$room_version")
@@ -52,11 +52,5 @@ dependencies {
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
 
-    // 🚀 Agrega dependencias de Firebase
-    implementation("com.google.firebase:firebase-auth-ktx:22.3.1") // Firebase Authentication
-    implementation("com.google.firebase:firebase-firestore-ktx:24.9.1") // Firestore
-    implementation("com.google.firebase:firebase-database-ktx:20.3.0") // Realtime Database
 }
 
-
-apply(plugin = "com.google.gms.google-services")

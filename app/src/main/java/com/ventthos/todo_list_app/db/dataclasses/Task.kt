@@ -17,7 +17,7 @@ import androidx.room.PrimaryKey
     indices = [Index(value = ["listId"])]
 )
 data class Task(
-    @PrimaryKey var id: Int,
+    @PrimaryKey(autoGenerate = true) var id: Int = 0,
     var title: String,
     var notes: String = "",
     var importance: Int,

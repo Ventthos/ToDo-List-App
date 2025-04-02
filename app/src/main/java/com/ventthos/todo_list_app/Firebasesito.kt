@@ -1,8 +1,6 @@
 package com.ventthos.todo_list_app
 
 import android.util.Log
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.firestore.FirebaseFirestore
 import com.ventthos.todo_list_app.db.dataclasses.Task
 
 data class User(
@@ -17,6 +15,7 @@ data class ListItem(
     val color: Int = 0
 )
 
+/*
 class Firebasesito {
 
 
@@ -140,3 +139,4 @@ class Firebasesito {
     }
 
 }
+*/

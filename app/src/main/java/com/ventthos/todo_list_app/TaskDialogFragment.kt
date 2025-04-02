@@ -131,6 +131,7 @@ class TaskDialogFragment: DialogFragment(), DateDialogFragment.DatePickerListene
                 .setPositiveButton(R.string.save){_,_->
                     sendValues()
                 }
+
             builder.create()
         } ?: throw IllegalStateException("Activity cannot be null")
     }

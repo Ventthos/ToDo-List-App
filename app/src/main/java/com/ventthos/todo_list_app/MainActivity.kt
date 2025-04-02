@@ -21,8 +21,6 @@ import androidx.sqlite.db.SupportSQLiteDatabase
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.navigation.NavigationView
 import com.google.android.material.snackbar.Snackbar
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.firestore.FirebaseFirestore
 import com.ventthos.todo_list_app.db.AppDatabase.AppDatabase
 import com.ventthos.todo_list_app.db.dataclasses.Task
 import com.ventthos.todo_list_app.db.dataclasses.TaskList
@@ -44,41 +42,12 @@ class MainActivity : AppCompatActivity(), TaskDialogFragment.TaskEditListener, L
     lateinit var recyclerView: RecyclerView
     lateinit var pageTitle: TextView
     lateinit var coordinatorLayout: CoordinatorLayout
-    private lateinit var auth: FirebaseAuth
-    private lateinit var db: FirebaseFirestore
-    private lateinit var Firebase: Firebasesito
     private val taskModel: TaskModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-        //Logica firebase
-        //Firebase = Firebasesito()
-        //Firebase.createUser("Vivi123","Victor", "Vivi","pass")
-        //var lista = ""
-        //Firebase.addList("Vivi123", "Lista", "1", 0) { listId ->
-        //    if (listId != null) {
-        //        lista = listId
-        //        Log.d("Firestore", "Lista creada con ID: $listId")
-        //    } else {
-        //        Log.e("Firestore", "Error al crear la lista")
-        //    }
 
-        //}
-        //var tarea = ""
-        //Firebase.addTask("Vivi123", lista,"Tarea1", "Hacer tarea 2", 3, "2025-10-1", 1) {
-        //    taskId ->
-        //    if (taskId != null) {
-        //        tarea = taskId
-        //        Log.d("Firestore", "Lista creada con ID: $taskId")
-        //    } else {
-        //        Log.e("Firestore", "Error al crear la lista")
-        //    }
-        //}
-
-        //Firebase.addTask("Vivi123", lista, "Tarea1", "Añadir tarea 2", 1, "2025-6-10", 1 )
-
-        //termina logica firebase
         //Logica db
         val db = Room.databaseBuilder(
             applicationContext,
@@ -96,10 +65,11 @@ class MainActivity : AppCompatActivity(), TaskDialogFragment.TaskEditListener, L
                 }
             })
             .build()
-        val userDao = db.UserDao()
-        val taskListDao = db.TaskListDao()
-        val taskDao = db.TaskDao()
+        taskModel.userDao = db.UserDao()
+        taskModel.listDao = db.TaskListDao()
+        taskModel.taskDao = db.TaskDao()
 
+        /*
         val users = userDao.getAllUsers()
         val taskLists = taskListDao.getAllUsersList(1)
         val insertTaskListId = taskLists.size + 1
@@ -107,10 +77,12 @@ class MainActivity : AppCompatActivity(), TaskDialogFragment.TaskEditListener, L
         val tasks = taskDao.getAllListTasks(insertTaskListId)
         val insertTaskId = tasks.size + 1
         taskDao.addTask(Task(insertTaskId,"Hacer la db", "No se como aa", 3,"2025-06-25",false, insertTaskListId,1))
-
+        */
+        taskModel.currentUserId = 1
 
         //termina logica db
         //Logica del reciclerView
+
         recyclerView = findViewById(R.id.recyclerView)
         recyclerView.layoutManager = LinearLayoutManager(this)
 
@@ -169,10 +141,11 @@ class MainActivity : AppCompatActivity(), TaskDialogFragment.TaskEditListener, L
         }
 
         taskModel.getListFromDb(this)
-
+        taskModel.getTasks()
         runFilters()
         redrawLists()
     }
+
     fun changePageStyles(){
         when (taskModel.currentPage) {
             -1 ->{
@@ -238,6 +211,7 @@ class MainActivity : AppCompatActivity(), TaskDialogFragment.TaskEditListener, L
             taskModel.editList(id, title, icon, colorId, this)
             taskModel.getListFromDb(this)
             redrawLists()
+            runFilters()
         }
     }
 

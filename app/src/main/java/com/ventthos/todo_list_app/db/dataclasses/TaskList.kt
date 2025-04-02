@@ -16,9 +16,9 @@ import androidx.room.PrimaryKey
     indices = [Index(value = ["userId"])] // Índice para mejorar rendimiento
 )
 data class TaskList(
-    @PrimaryKey val id: Int,
+    @PrimaryKey (autoGenerate = true) var id: Int = 0,
     var name: String,
     var color: Int,
     var iconName :String,
     var iconId: Int,
-    var userId :Int = 1)
+    var userId :Int = -1)

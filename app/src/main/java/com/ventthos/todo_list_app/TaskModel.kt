@@ -4,12 +4,22 @@ import android.content.Context
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.recyclerview.widget.RecyclerView
+import com.ventthos.todo_list_app.db.Daos.TaskDao
+import com.ventthos.todo_list_app.db.Daos.TaskListDao
+import com.ventthos.todo_list_app.db.Daos.UserDao
 import com.ventthos.todo_list_app.db.dataclasses.TaskList
 import com.ventthos.todo_list_app.db.dataclasses.Task
 
 //Clase para los items dentro de el recicler view
 
 class TaskModel: ViewModel() {
+
+    var currentUserId = -1
+
+    lateinit var taskDao: TaskDao
+    lateinit var listDao: TaskListDao
+    lateinit var userDao: UserDao
+
     //Aqui jalariamos los elementos de la base de datos para meterlos a una lista
     private val tasks = mutableListOf(
         Task(id = 1, title = "Comprar leche", notes = "Ir al supermercado", importance = 2, date = "2025-03-24", listId = 1, colorId = 0),
@@ -26,19 +36,18 @@ class TaskModel: ViewModel() {
 
     var filteredTasks: MutableList<Task> = tasks
 
-    private val listDb = mutableListOf(
-        TaskList(1, "Pendientes", 0, "time", -1)
-    )
-
-    val lists = mutableListOf<TaskList>(
-        TaskList(2, "No se", 0, "time", -1),
-        TaskList(3, "Tal vez", 0, "time", -1)
-
-    )
+    val lists = mutableListOf<TaskList>()
 
     lateinit var taskAdapter: ItemAdapter
 
     var currentPage = -1
+
+    fun getTasks(){
+        tasks.clear()
+        val userListsId = lists.map { it.id }
+        tasks.addAll(taskDao.getAllTasksFromUser(userListsId))
+        taskAdapter.notifyDataSetChanged()
+    }
 
    fun createTask(title: String, notes: String, importance: Int, date: String?, listId: Int){
        var finalDate = date
@@ -46,38 +55,21 @@ class TaskModel: ViewModel() {
             finalDate = null
 
        val colorId = lists.first { it.id == listId }.color
-       val newTask = Task((tasks.size+1), title, notes, importance, finalDate, false, listId, colorId)
 
+       getTasks()
+       val newTask = Task(0, title, notes, importance, finalDate, false, listId, colorId)
+        taskDao.addTask(newTask)
 
-        tasks.add(newTask)
+       getTasks()
         taskAdapter.notifyDataSetChanged()
    }
 
-    fun getChangedFieldsInTask(original: Task, updated: Task): Map<String, Any?> {
-        val changes = mutableMapOf<String, Any?>()
-
-        if (original.title != updated.title) changes["title"] = updated.title
-        if (original.notes != updated.notes) changes["notes"] = updated.notes
-        if (original.importance != updated.importance) changes["importance"] = updated.importance
-        if (original.date != updated.date) changes["date"] = updated.date
-        return changes
-    }
 
     fun editTask(id:Int, title: String, notes: String, importance: Int, date: String?) {
-        val task = tasks.first { it.id == id }
+
         val updatedTask = Task(id, title, notes, importance, date)
 
-        val changes = getChangedFieldsInTask(task, updatedTask)
-        Log.i("CAMBIOS HAY EN MIII", changes.toString())
-        changes.forEach { (key, value) ->
-            when (key) {
-                "title" -> task.title = value as String
-                "notes" -> task.notes = value as String
-                "importance" -> task.importance = value as Int
-                "date" -> task.date = value as String?
-                "completed" -> task.completed = value as Boolean
-            }
-        }
+
     }
 
     fun clearFilters(recyclerView: RecyclerView){
@@ -107,47 +99,27 @@ class TaskModel: ViewModel() {
         taskAdapter.notifyDataSetChanged()
     }
 
-    fun createList(title: String, icon: Int, colorId: Int, context: Context){
-        val resourceName: String = context.resources.getResourceEntryName(icon)
-        listDb.add(
-            TaskList(lists.size+1, title, colorId, resourceName, icon)
-        )
+    fun getListFromDb(context: Context){
+        lists.clear()
+        lists.addAll(listDao.getAllUsersList(currentUserId))
+        for (list in lists){
+            val photoId = context.resources.getIdentifier(list.iconName, "drawable", context.packageName)
+            list.iconId = photoId
+        }
     }
 
-    fun getChangedFieldsInList(original: TaskList, updated: TaskList): Map<String, Any?> {
-        val changes = mutableMapOf<String, Any?>()
-
-        if (original.name != updated.name) changes["name"] = updated.name
-        if (original.iconName != updated.iconName) changes["icon"] = updated.iconName
-        if (original.color != updated.color) changes["color"] = updated.color
-        return changes
+    fun createList(title: String, icon: Int, colorId: Int, context: Context){
+        val resourceName: String = context.resources.getResourceEntryName(icon)
+        val newTask = TaskList(0, title, colorId, resourceName, icon, currentUserId)
+        listDao.addList(newTask)
     }
 
     fun editList(id: Int, name: String, icon: Int, colorId: Int, context: Context){
-        val oldList = lists.first { it.id == id }
-        val updatedList = TaskList(id, name, colorId, oldList.iconName, icon)
-
-        val listDb = listDb.first { it.id == id }
-
-        val changes = getChangedFieldsInList(oldList, updatedList)
-        Log.i("CAMBIOS HAY EN MIII", changes.toString())
         val resourceName: String = context.resources.getResourceEntryName(icon)
-
-        changes.forEach { (key, value) ->
-            when (key) {
-                "name" -> listDb.name = value as String
-                "icon" -> listDb.iconName = resourceName
-                "color" -> listDb.color = value as Int
-            }
-        }
-    }
-
-    fun getListFromDb(context: Context){
-        lists.clear()
-        for (x in listDb){
-            val photoId = context.resources.getIdentifier(x.iconName, "drawable", context.packageName)
-            lists.add(TaskList(x.id, x.name, x.color, x.iconName,photoId))
-        }
+        val updatedList = TaskList(id, name, colorId, resourceName, icon, currentUserId)
+        listDao.updateList(updatedList)
+        taskDao.updateTaskListColorInTasks(updatedList.id, colorId)
+        getTasks()
     }
 
     fun filterByList(recyclerView: RecyclerView){
