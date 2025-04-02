@@ -12,7 +12,6 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.content.ContextCompat
 import androidx.core.view.GravityCompat
-import androidx.core.view.isEmpty
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -21,6 +20,7 @@ import com.google.android.material.navigation.NavigationView
 import com.google.android.material.snackbar.Snackbar
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import com.ventthos.todo_list_app.db.dataclasses.Task
 
 interface OnTaskCheckedChangeListener {
     fun onTaskCheckedChanged(task: Task, isChecked: Boolean)
@@ -31,7 +31,6 @@ interface OnTaskClickForEditListener{
 }
 
 class MainActivity : AppCompatActivity(), TaskDialogFragment.TaskEditListener, ListDialogFragment.ListEditorListener, OnTaskCheckedChangeListener, OnTaskClickForEditListener {
-    val excluded :List<String> = listOf("-1", "-2", "-3")
     lateinit var navigationView: NavigationView
     lateinit var drawerLayout: DrawerLayout
     lateinit var drawerToggle: ActionBarDrawerToggle
@@ -108,19 +107,19 @@ class MainActivity : AppCompatActivity(), TaskDialogFragment.TaskEditListener, L
                     ListDialogFragment().show(supportFragmentManager, "List")
                 }
                 R.id.nav_all->{
-                    taskModel.currentPage = "-1"
+                    taskModel.currentPage = -1
                 }
                 R.id.nav_importants->{
-                    taskModel.currentPage = "-2"
+                    taskModel.currentPage = -2
                 }
                 R.id.nav_planned->{
-                    taskModel.currentPage = "-3"
+                    taskModel.currentPage = -3
                 }
                 R.id.nav_completed->{
-                    taskModel.currentPage = "-4"
+                    taskModel.currentPage = -4
                 }
                 else->{
-                    taskModel.currentPage = menuItem.itemId.toString()
+                    taskModel.currentPage = menuItem.itemId
                 }
             }
             changePageStyles()
@@ -141,16 +140,16 @@ class MainActivity : AppCompatActivity(), TaskDialogFragment.TaskEditListener, L
     }
     fun changePageStyles(){
         when (taskModel.currentPage) {
-            "-1" ->{
+            -1 ->{
                 pageTitle.setText(R.string.allVista)
             }
-            "-2" ->{
+            -2 ->{
                 pageTitle.setText(R.string.importantVista)
             }
-            "-3" ->{
+            -3 ->{
                 pageTitle.setText(R.string.plannedVista)
             }
-            "-4" -> {
+            -4 -> {
                 pageTitle.setText(R.string.completedVista)
             }
             else->{
@@ -159,7 +158,7 @@ class MainActivity : AppCompatActivity(), TaskDialogFragment.TaskEditListener, L
             }
         }
 
-        if(taskModel.currentPage in excluded && toolbar.menu.hasVisibleItems()){
+        if(taskModel.currentPage < 0 && toolbar.menu.hasVisibleItems()){
 
             for (i in 0 until toolbar.menu.size()) {
                 toolbar.menu.getItem(i).isVisible = false
@@ -167,7 +166,7 @@ class MainActivity : AppCompatActivity(), TaskDialogFragment.TaskEditListener, L
             fab.visibility = View.GONE
             return
         }
-        else if(taskModel.currentPage !in excluded && !toolbar.menu.hasVisibleItems()){
+        else if(taskModel.currentPage >= 0 && !toolbar.menu.hasVisibleItems()){
             for (i in 0 until toolbar.menu.size()) {
                 toolbar.menu.getItem(i).isVisible = true
             }
@@ -212,22 +211,22 @@ class MainActivity : AppCompatActivity(), TaskDialogFragment.TaskEditListener, L
         listsMenu?.clear()
         for (list in taskModel.lists){
             val item = listsMenu?.add(0,list.id.hashCode(), 0, list.name)
-            item?.setIcon(list.icon)
+            item?.setIcon(list.iconId)
         }
     }
 
     fun runFilters(){
         when (taskModel.currentPage) {
-            "-1" ->{
+            -1 ->{
                 taskModel.clearFilters(recyclerView)
             }
-            "-2" ->{
+            -2 ->{
                 taskModel.filtrateImportants(recyclerView)
             }
-            "-3" ->{
+            -3 ->{
                 taskModel.filtratePlanned(recyclerView)
             }
-            "-4" -> {
+            -4 -> {
                 taskModel.filtrateCompleted(recyclerView)
             }
             else ->{
@@ -262,7 +261,7 @@ class MainActivity : AppCompatActivity(), TaskDialogFragment.TaskEditListener, L
     override fun onOptionsItemSelected(item: MenuItem): Boolean = when(item.itemId){
         R.id.editList_nav->{
             val list = taskModel.lists.first { it.id == taskModel.currentPage }
-            ListDialogFragment.setArguments(list.id.hashCode(), list.name, list.icon, list.color).show(supportFragmentManager,"EditList")
+            ListDialogFragment.setArguments(list.id.hashCode(), list.name, list.iconId, list.color).show(supportFragmentManager,"EditList")
             true
         }
 
