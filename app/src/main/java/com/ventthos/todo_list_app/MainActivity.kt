@@ -191,6 +191,8 @@ class MainActivity : AppCompatActivity(), TaskDialogFragment.TaskEditListener, L
         date: String,
         editing: Boolean
     ) {
+        taskModel.getListFromDb(this)
+        redrawLists()
         if(!editing){
             taskModel.createTask(title, notes, importance, date, taskModel.currentPage)
         }
@@ -201,6 +203,7 @@ class MainActivity : AppCompatActivity(), TaskDialogFragment.TaskEditListener, L
     }
 
     override fun onListEdited(id: Int, title: String, icon: Int, colorId: Int, editing: Boolean) {
+
         if(!editing){
             taskModel.createList(title, icon, colorId, this)
             taskModel.getListFromDb(this)
@@ -213,6 +216,7 @@ class MainActivity : AppCompatActivity(), TaskDialogFragment.TaskEditListener, L
             redrawLists()
             runFilters()
         }
+        runFilters()
     }
 
     fun redrawLists(){

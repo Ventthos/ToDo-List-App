@@ -55,7 +55,6 @@ class TaskModel: ViewModel() {
             finalDate = null
 
        val colorId = lists.first { it.id == listId }.color
-
        getTasks()
        val newTask = Task(0, title, notes, importance, finalDate, false, listId, colorId)
         taskDao.addTask(newTask)
