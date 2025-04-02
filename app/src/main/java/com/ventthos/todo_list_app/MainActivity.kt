@@ -25,17 +25,13 @@ import com.google.firebase.firestore.FirebaseFirestore
 interface OnTaskCheckedChangeListener {
     fun onTaskCheckedChanged(task: Task, isChecked: Boolean)
 }
-data class User(
-    val id: String = "",
-    val name: String = "",
-    val email: String = ""
-)
 
 interface OnTaskClickForEditListener{
     fun OnTaskClickForEdit(task: Task)
 }
 
 class MainActivity : AppCompatActivity(), TaskDialogFragment.TaskEditListener, ListDialogFragment.ListEditorListener, OnTaskCheckedChangeListener, OnTaskClickForEditListener {
+    val excluded :List<String> = listOf("-1", "-2", "-3")
     lateinit var navigationView: NavigationView
     lateinit var drawerLayout: DrawerLayout
     lateinit var drawerToggle: ActionBarDrawerToggle
@@ -46,17 +42,38 @@ class MainActivity : AppCompatActivity(), TaskDialogFragment.TaskEditListener, L
     lateinit var coordinatorLayout: CoordinatorLayout
     private lateinit var auth: FirebaseAuth
     private lateinit var db: FirebaseFirestore
-
+    private lateinit var Firebase: Firebasesito
     private val taskModel: TaskModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         //Logica firebase
-        auth = FirebaseAuth.getInstance()
-        db = FirebaseFirestore.getInstance()
+        Firebase = Firebasesito()
+        Firebase.createUser("Vivi123","Victor", "Vivi","pass")
+        var lista = ""
+        Firebase.addList("Vivi123", "Lista", "1", 0) { listId ->
+            if (listId != null) {
+                lista = listId
+                Log.d("Firestore", "Lista creada con ID: $listId")
+            } else {
+                Log.e("Firestore", "Error al crear la lista")
+            }
 
-        saveUser()
+        }
+        var tarea = ""
+        Firebase.addTask("Vivi123", lista,"Tarea1", "Hacer tarea 2", 3, "2025-10-1", 1) {
+            taskId ->
+            if (taskId != null) {
+                tarea = taskId
+                Log.d("Firestore", "Lista creada con ID: $taskId")
+            } else {
+                Log.e("Firestore", "Error al crear la lista")
+            }
+        }
+
+        //Firebase.addTask("Vivi123", lista, "Tarea1", "Añadir tarea 2", 1, "2025-6-10", 1 )
+
         //termina logica firebase
 
         //Logica del reciclerView
@@ -91,19 +108,19 @@ class MainActivity : AppCompatActivity(), TaskDialogFragment.TaskEditListener, L
                     ListDialogFragment().show(supportFragmentManager, "List")
                 }
                 R.id.nav_all->{
-                    taskModel.currentPage = -1
+                    taskModel.currentPage = "-1"
                 }
                 R.id.nav_importants->{
-                    taskModel.currentPage = -2
+                    taskModel.currentPage = "-2"
                 }
                 R.id.nav_planned->{
-                    taskModel.currentPage = -3
+                    taskModel.currentPage = "-3"
                 }
                 R.id.nav_completed->{
-                    taskModel.currentPage = -4
+                    taskModel.currentPage = "-4"
                 }
                 else->{
-                    taskModel.currentPage = menuItem.itemId
+                    taskModel.currentPage = menuItem.itemId.toString()
                 }
             }
             changePageStyles()
@@ -122,32 +139,18 @@ class MainActivity : AppCompatActivity(), TaskDialogFragment.TaskEditListener, L
         runFilters()
         redrawLists()
     }
-    fun saveUser() {
-        val db = FirebaseFirestore.getInstance()
-        val user = User(id = "1", name = "Víctor", email = "victor@gmail.com")
-
-        db.collection("users") // Nombre de la colección
-            .document(user.id) // ID del documento
-            .set(user) // Guardar el objeto
-            .addOnSuccessListener {
-                println("Usuario guardado correctamente")
-            }
-            .addOnFailureListener { e ->
-                println("Error al guardar usuario: ${e.message}")
-            }
-    }
     fun changePageStyles(){
         when (taskModel.currentPage) {
-            -1 ->{
+            "-1" ->{
                 pageTitle.setText(R.string.allVista)
             }
-            -2 ->{
+            "-2" ->{
                 pageTitle.setText(R.string.importantVista)
             }
-            -3 ->{
+            "-3" ->{
                 pageTitle.setText(R.string.plannedVista)
             }
-            -4 -> {
+            "-4" -> {
                 pageTitle.setText(R.string.completedVista)
             }
             else->{
@@ -156,7 +159,7 @@ class MainActivity : AppCompatActivity(), TaskDialogFragment.TaskEditListener, L
             }
         }
 
-        if(taskModel.currentPage <0 && toolbar.menu.hasVisibleItems()){
+        if(taskModel.currentPage in excluded && toolbar.menu.hasVisibleItems()){
 
             for (i in 0 until toolbar.menu.size()) {
                 toolbar.menu.getItem(i).isVisible = false
@@ -164,7 +167,7 @@ class MainActivity : AppCompatActivity(), TaskDialogFragment.TaskEditListener, L
             fab.visibility = View.GONE
             return
         }
-        else if(taskModel.currentPage >=0 && !toolbar.menu.hasVisibleItems()){
+        else if(taskModel.currentPage !in excluded && !toolbar.menu.hasVisibleItems()){
             for (i in 0 until toolbar.menu.size()) {
                 toolbar.menu.getItem(i).isVisible = true
             }
@@ -208,23 +211,23 @@ class MainActivity : AppCompatActivity(), TaskDialogFragment.TaskEditListener, L
         val listsMenu = navigationView.menu.findItem(R.id.listMenuDisplay).subMenu
         listsMenu?.clear()
         for (list in taskModel.lists){
-            val item = listsMenu?.add(0,list.id, 0, list.name)
+            val item = listsMenu?.add(0,list.id.hashCode(), 0, list.name)
             item?.setIcon(list.icon)
         }
     }
 
     fun runFilters(){
         when (taskModel.currentPage) {
-            -1 ->{
+            "-1" ->{
                 taskModel.clearFilters(recyclerView)
             }
-            -2 ->{
+            "-2" ->{
                 taskModel.filtrateImportants(recyclerView)
             }
-            -3 ->{
+            "-3" ->{
                 taskModel.filtratePlanned(recyclerView)
             }
-            -4 -> {
+            "-4" -> {
                 taskModel.filtrateCompleted(recyclerView)
             }
             else ->{
@@ -235,7 +238,7 @@ class MainActivity : AppCompatActivity(), TaskDialogFragment.TaskEditListener, L
     }
 
     override fun onTaskCheckedChanged(task: Task, isChecked: Boolean) {
-        taskModel.changeCompleted(task.id, isChecked)
+        taskModel.changeCompleted(task.id.toInt(), isChecked)
         runFilters()
         if(isChecked){
             val snackbar = Snackbar.make(coordinatorLayout, R.string.completedConfirmation, Snackbar.LENGTH_LONG)
@@ -245,7 +248,7 @@ class MainActivity : AppCompatActivity(), TaskDialogFragment.TaskEditListener, L
     }
 
     override fun OnTaskClickForEdit(task: Task) {
-        TaskDialogFragment.setArguments(task.id, task.title, task.notes, task.importance, task.date)
+        TaskDialogFragment.setArguments(task.id.toInt(), task.title, task.notes, task.importance, task.date)
             .show(supportFragmentManager, "TaskEdit")
 
     }
@@ -259,7 +262,7 @@ class MainActivity : AppCompatActivity(), TaskDialogFragment.TaskEditListener, L
     override fun onOptionsItemSelected(item: MenuItem): Boolean = when(item.itemId){
         R.id.editList_nav->{
             val list = taskModel.lists.first { it.id == taskModel.currentPage }
-            ListDialogFragment.setArguments(list.id, list.name, list.icon, list.color).show(supportFragmentManager,"EditList")
+            ListDialogFragment.setArguments(list.id.hashCode(), list.name, list.icon, list.color).show(supportFragmentManager,"EditList")
             true
         }
 
