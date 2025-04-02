@@ -65,12 +65,31 @@ class TaskModel: ViewModel() {
 
 
     fun editTask(id:Int, title: String, notes: String, importance: Int, date: String?) {
+        var finaldate = date
+        if (date == ""){
+            finaldate = null
+        }
+        val task = taskDao.getTaskWithId(id)
+        val updatedTask = task
+        updatedTask.title = title
+        updatedTask.notes = notes
+        updatedTask.importance = importance
+        updatedTask.date = finaldate
+        taskDao.updateTask(updatedTask)
 
-        val updatedTask = Task(id, title, notes, importance, date)
-
+        getTasks()
+        taskAdapter.notifyDataSetChanged()
 
     }
-
+    fun deleteTask(id:Int, title: String, notes: String, importance: Int, date: String?) {
+        var finalDate = date
+        if (date == "") {
+            finalDate = null
+        }
+        val TaskToDelete = Task(id,title,notes,importance,finalDate)
+        taskDao.deleteTask(TaskToDelete)
+        taskAdapter.notifyDataSetChanged()
+    }
     fun clearFilters(recyclerView: RecyclerView){
         filteredTasks = tasks.filter {!it.completed }.toMutableList()
         taskAdapter.updateList(filteredTasks, recyclerView)
@@ -95,6 +114,8 @@ class TaskModel: ViewModel() {
     fun changeCompleted(id:Int, completed: Boolean){
         val task = tasks.first { it.id == id }
         task.completed = completed
+        //agregar completaod
+        taskDao.updateTask(task)
         taskAdapter.notifyDataSetChanged()
     }
 
@@ -120,7 +141,12 @@ class TaskModel: ViewModel() {
         taskDao.updateTaskListColorInTasks(updatedList.id, colorId)
         getTasks()
     }
-
+    fun deleteList(id: Int, name: String, icon: Int, colorId: Int, context: Context){
+        val resourceName: String = context.resources.getResourceEntryName(icon)
+        val ListToDelete = TaskList(id, name, colorId, resourceName, icon, currentUserId)
+        listDao.deleteList(ListToDelete)
+        getTasks()
+    }
     fun filterByList(recyclerView: RecyclerView){
         filteredTasks = tasks.filter { it.listId == currentPage }.toMutableList()
         taskAdapter.updateList(filteredTasks, recyclerView)
