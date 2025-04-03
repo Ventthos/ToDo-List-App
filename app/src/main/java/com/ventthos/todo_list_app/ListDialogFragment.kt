@@ -113,7 +113,11 @@ class ListDialogFragment : DialogFragment(), IconPicker.IconPickerListener{
                     dialog?.dismiss()
                 }
 
+            if(editing){
+                builder.setNeutralButton("Eliminar"){_,_->
 
+                }
+            }
 
             builder.create()
         } ?: throw IllegalStateException("Activity cannot be null")

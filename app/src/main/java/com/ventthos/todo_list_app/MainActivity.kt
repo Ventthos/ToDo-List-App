@@ -12,24 +12,22 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.content.ContextCompat
 import androidx.core.view.GravityCompat
-import androidx.core.view.isEmpty
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import androidx.room.Room
+import androidx.room.RoomDatabase
+import androidx.sqlite.db.SupportSQLiteDatabase
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.navigation.NavigationView
 import com.google.android.material.snackbar.Snackbar
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.firestore.FirebaseFirestore
+import com.ventthos.todo_list_app.db.AppDatabase.AppDatabase
+import com.ventthos.todo_list_app.db.dataclasses.Task
+import com.ventthos.todo_list_app.db.dataclasses.TaskList
 
 interface OnTaskCheckedChangeListener {
     fun onTaskCheckedChanged(task: Task, isChecked: Boolean)
 }
-data class User(
-    val id: String = "",
-    val name: String = "",
-    val email: String = ""
-)
 
 interface OnTaskClickForEditListener{
     fun OnTaskClickForEdit(task: Task)
@@ -44,22 +42,47 @@ class MainActivity : AppCompatActivity(), TaskDialogFragment.TaskEditListener, L
     lateinit var recyclerView: RecyclerView
     lateinit var pageTitle: TextView
     lateinit var coordinatorLayout: CoordinatorLayout
-    private lateinit var auth: FirebaseAuth
-    private lateinit var db: FirebaseFirestore
-
     private val taskModel: TaskModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-        //Logica firebase
-        auth = FirebaseAuth.getInstance()
-        db = FirebaseFirestore.getInstance()
 
-        saveUser()
-        //termina logica firebase
+        //Logica db
+        val db = Room.databaseBuilder(
+            applicationContext,
+            AppDatabase::class.java,
+            "library"
 
+        )
+            .allowMainThreadQueries()
+            .addCallback(object : RoomDatabase.Callback() {
+                override fun onCreate(db: SupportSQLiteDatabase) {
+                    super.onCreate(db)
+
+                    db.execSQL("INSERT INTO user(id, name, lastName, email, avatar) VALUES (1,'Victor', 'Ez Calante', 'correo@dominio.com', 1)")
+
+                }
+            })
+            .build()
+        taskModel.userDao = db.UserDao()
+        taskModel.listDao = db.TaskListDao()
+        taskModel.taskDao = db.TaskDao()
+
+        /*
+        val users = userDao.getAllUsers()
+        val taskLists = taskListDao.getAllUsersList(1)
+        val insertTaskListId = taskLists.size + 1
+        taskListDao.addList(TaskList(insertTaskListId,"Tareas",1,"time",-1,users[0].id))
+        val tasks = taskDao.getAllListTasks(insertTaskListId)
+        val insertTaskId = tasks.size + 1
+        taskDao.addTask(Task(insertTaskId,"Hacer la db", "No se como aa", 3,"2025-06-25",false, insertTaskListId,1))
+        */
+        taskModel.currentUserId = 1
+
+        //termina logica db
         //Logica del reciclerView
+
         recyclerView = findViewById(R.id.recyclerView)
         recyclerView.layoutManager = LinearLayoutManager(this)
 
@@ -118,24 +141,11 @@ class MainActivity : AppCompatActivity(), TaskDialogFragment.TaskEditListener, L
         }
 
         taskModel.getListFromDb(this)
-
+        taskModel.getTasks()
         runFilters()
         redrawLists()
     }
-    fun saveUser() {
-        val db = FirebaseFirestore.getInstance()
-        val user = User(id = "1", name = "Víctor", email = "victor@gmail.com")
 
-        db.collection("users") // Nombre de la colección
-            .document(user.id) // ID del documento
-            .set(user) // Guardar el objeto
-            .addOnSuccessListener {
-                println("Usuario guardado correctamente")
-            }
-            .addOnFailureListener { e ->
-                println("Error al guardar usuario: ${e.message}")
-            }
-    }
     fun changePageStyles(){
         when (taskModel.currentPage) {
             -1 ->{
@@ -156,7 +166,7 @@ class MainActivity : AppCompatActivity(), TaskDialogFragment.TaskEditListener, L
             }
         }
 
-        if(taskModel.currentPage <0 && toolbar.menu.hasVisibleItems()){
+        if(taskModel.currentPage < 0 && toolbar.menu.hasVisibleItems()){
 
             for (i in 0 until toolbar.menu.size()) {
                 toolbar.menu.getItem(i).isVisible = false
@@ -164,7 +174,7 @@ class MainActivity : AppCompatActivity(), TaskDialogFragment.TaskEditListener, L
             fab.visibility = View.GONE
             return
         }
-        else if(taskModel.currentPage >=0 && !toolbar.menu.hasVisibleItems()){
+        else if(taskModel.currentPage >= 0 && !toolbar.menu.hasVisibleItems()){
             for (i in 0 until toolbar.menu.size()) {
                 toolbar.menu.getItem(i).isVisible = true
             }
@@ -181,6 +191,8 @@ class MainActivity : AppCompatActivity(), TaskDialogFragment.TaskEditListener, L
         date: String,
         editing: Boolean
     ) {
+        taskModel.getListFromDb(this)
+        redrawLists()
         if(!editing){
             taskModel.createTask(title, notes, importance, date, taskModel.currentPage)
         }
@@ -191,6 +203,7 @@ class MainActivity : AppCompatActivity(), TaskDialogFragment.TaskEditListener, L
     }
 
     override fun onListEdited(id: Int, title: String, icon: Int, colorId: Int, editing: Boolean) {
+
         if(!editing){
             taskModel.createList(title, icon, colorId, this)
             taskModel.getListFromDb(this)
@@ -201,15 +214,17 @@ class MainActivity : AppCompatActivity(), TaskDialogFragment.TaskEditListener, L
             taskModel.editList(id, title, icon, colorId, this)
             taskModel.getListFromDb(this)
             redrawLists()
+            runFilters()
         }
+        runFilters()
     }
 
     fun redrawLists(){
         val listsMenu = navigationView.menu.findItem(R.id.listMenuDisplay).subMenu
         listsMenu?.clear()
         for (list in taskModel.lists){
-            val item = listsMenu?.add(0,list.id, 0, list.name)
-            item?.setIcon(list.icon)
+            val item = listsMenu?.add(0,list.id.hashCode(), 0, list.name)
+            item?.setIcon(list.iconId)
         }
     }
 
@@ -235,7 +250,7 @@ class MainActivity : AppCompatActivity(), TaskDialogFragment.TaskEditListener, L
     }
 
     override fun onTaskCheckedChanged(task: Task, isChecked: Boolean) {
-        taskModel.changeCompleted(task.id, isChecked)
+        taskModel.changeCompleted(task.id.toInt(), isChecked)
         runFilters()
         if(isChecked){
             val snackbar = Snackbar.make(coordinatorLayout, R.string.completedConfirmation, Snackbar.LENGTH_LONG)
@@ -245,7 +260,7 @@ class MainActivity : AppCompatActivity(), TaskDialogFragment.TaskEditListener, L
     }
 
     override fun OnTaskClickForEdit(task: Task) {
-        TaskDialogFragment.setArguments(task.id, task.title, task.notes, task.importance, task.date)
+        TaskDialogFragment.setArguments(task.id.toInt(), task.title, task.notes, task.importance, task.date)
             .show(supportFragmentManager, "TaskEdit")
 
     }
@@ -259,7 +274,7 @@ class MainActivity : AppCompatActivity(), TaskDialogFragment.TaskEditListener, L
     override fun onOptionsItemSelected(item: MenuItem): Boolean = when(item.itemId){
         R.id.editList_nav->{
             val list = taskModel.lists.first { it.id == taskModel.currentPage }
-            ListDialogFragment.setArguments(list.id, list.name, list.icon, list.color).show(supportFragmentManager,"EditList")
+            ListDialogFragment.setArguments(list.id.hashCode(), list.name, list.iconId, list.color).show(supportFragmentManager,"EditList")
             true
         }
 

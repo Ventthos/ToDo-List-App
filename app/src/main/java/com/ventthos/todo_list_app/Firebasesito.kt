@@ -1,23 +1,27 @@
 package com.ventthos.todo_list_app
 
 import android.util.Log
-import com.google.firebase.firestore.FirebaseFirestore
+import com.ventthos.todo_list_app.db.dataclasses.Task
 
 data class User(
+    val id: String = "",
     val name: String = "",
     val username: String = "",
     val password: String = ""
 )
-
 data class ListItem(
-    val name: String = ""
+    val name: String = "",
+    val icon: String = "",
+    val color: Int = 0
 )
 
+/*
 class Firebasesito {
+
 
     fun createUser(userId: String, name: String, username: String, password: String) {
         val db = FirebaseFirestore.getInstance()
-        val user = User(name, username, password)
+        val user = User(userId,name, username, password)
 
         db.collection("users")
             .document(userId) // El ID del usuario (podría ser su UID de Firebase Auth)
@@ -43,33 +47,37 @@ class Firebasesito {
             }
     }
 
-    fun addList(userId: String, listName: String) {
+    fun addList(userId: String, listName: String, icon: String, color: Int, callback: (String?) -> Unit){
         val db = FirebaseFirestore.getInstance()
-        val newList = ListItem(listName)
-
+        val newList = ListItem(listName, icon, color)
         db.collection("users").document(userId)
             .collection("lists")
             .add(newList)
             .addOnSuccessListener { documentReference ->
+                val listId = documentReference.id
                 Log.d("Firestore", "Lista creada con ID: ${documentReference.id}")
+                callback(listId)
             }
             .addOnFailureListener { e ->
                 Log.w("Firestore", "Error al agregar lista", e)
+                callback(null)
             }
     }
-    fun addTask(userId: String, listId: String, name: String, startDate: String, endDate: String, priority: String) {
+    fun addTask(userId: Int, listId: Int, name: String,notas:String,importancia:Int, endDate: String, color: Int, callback: (String?) -> Unit) {
         val db = FirebaseFirestore.getInstance()
-        val newTask = Task(name, startDate, endDate, priority)
-        Task(id = 1, title = "Comprar leche", notes = "Ir al supermercado", importance = 2, date = "2025-03-24", listId = 1, colorId = 0)
+        val newTask = Task(id=userId, title=name,notes=notas, importance=importancia, date=endDate, listId=listId, colorId = color)
 
-        db.collection("users").document(userId)
-            .collection("lists").document(listId)
+        db.collection("users").document(userId.toString())
+            .collection("lists").document(listId.toString())
             .collection("tasks")
             .add(newTask)
             .addOnSuccessListener { documentReference ->
+                val taskId =documentReference.id
+                callback(taskId)
                 Log.d("Firestore", "Tarea creada con ID: ${documentReference.id}")
             }
             .addOnFailureListener { e ->
+                callback(null)
                 Log.w("Firestore", "Error al agregar tarea", e)
             }
     }
@@ -131,3 +139,4 @@ class Firebasesito {
     }
 
 }
+*/

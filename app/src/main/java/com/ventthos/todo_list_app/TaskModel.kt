@@ -1,17 +1,25 @@
 package com.ventthos.todo_list_app
 
-import android.R.id
 import android.content.Context
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.recyclerview.widget.RecyclerView
-
+import com.ventthos.todo_list_app.db.Daos.TaskDao
+import com.ventthos.todo_list_app.db.Daos.TaskListDao
+import com.ventthos.todo_list_app.db.Daos.UserDao
+import com.ventthos.todo_list_app.db.dataclasses.TaskList
+import com.ventthos.todo_list_app.db.dataclasses.Task
 
 //Clase para los items dentro de el recicler view
-data class Task(val id: Int, var title: String, var notes: String = "", var importance: Int,
-                var date: String?, var completed: Boolean = false, val listId: Int = 0, val colorId: Int = 0)
 
 class TaskModel: ViewModel() {
+
+    var currentUserId = -1
+
+    lateinit var taskDao: TaskDao
+    lateinit var listDao: TaskListDao
+    lateinit var userDao: UserDao
+
     //Aqui jalariamos los elementos de la base de datos para meterlos a una lista
     private val tasks = mutableListOf(
         Task(id = 1, title = "Comprar leche", notes = "Ir al supermercado", importance = 2, date = "2025-03-24", listId = 1, colorId = 0),
@@ -28,17 +36,18 @@ class TaskModel: ViewModel() {
 
     var filteredTasks: MutableList<Task> = tasks
 
-    private val listDb = mutableListOf(
-        TaskListDB(1, "Pendientes", 0, "time")
-    )
-
-    val lists = mutableListOf<TaskList>(
-
-    )
+    val lists = mutableListOf<TaskList>()
 
     lateinit var taskAdapter: ItemAdapter
 
     var currentPage = -1
+
+    fun getTasks(){
+        tasks.clear()
+        val userListsId = lists.map { it.id }
+        tasks.addAll(taskDao.getAllTasksFromUser(userListsId))
+        taskAdapter.notifyDataSetChanged()
+    }
 
    fun createTask(title: String, notes: String, importance: Int, date: String?, listId: Int){
        var finalDate = date
@@ -46,40 +55,41 @@ class TaskModel: ViewModel() {
             finalDate = null
 
        val colorId = lists.first { it.id == listId }.color
-       val newTask = Task(tasks.size+1, title, notes, importance, finalDate, false, listId, colorId)
+       getTasks()
+       val newTask = Task(0, title, notes, importance, finalDate, false, listId, colorId)
+        taskDao.addTask(newTask)
 
-
-        tasks.add(newTask)
+       getTasks()
         taskAdapter.notifyDataSetChanged()
    }
 
-    fun getChangedFieldsInTask(original: Task, updated: Task): Map<String, Any?> {
-        val changes = mutableMapOf<String, Any?>()
-
-        if (original.title != updated.title) changes["title"] = updated.title
-        if (original.notes != updated.notes) changes["notes"] = updated.notes
-        if (original.importance != updated.importance) changes["importance"] = updated.importance
-        if (original.date != updated.date) changes["date"] = updated.date
-        return changes
-    }
 
     fun editTask(id:Int, title: String, notes: String, importance: Int, date: String?) {
-        val task = tasks.first { it.id == id }
-        val updatedTask = Task(id, title, notes, importance, date)
-
-        val changes = getChangedFieldsInTask(task, updatedTask)
-        Log.i("CAMBIOS HAY EN MIII", changes.toString())
-        changes.forEach { (key, value) ->
-            when (key) {
-                "title" -> task.title = value as String
-                "notes" -> task.notes = value as String
-                "importance" -> task.importance = value as Int
-                "date" -> task.date = value as String?
-                "completed" -> task.completed = value as Boolean
-            }
+        var finaldate = date
+        if (date == ""){
+            finaldate = null
         }
-    }
+        val task = taskDao.getTaskWithId(id)
+        val updatedTask = task
+        updatedTask.title = title
+        updatedTask.notes = notes
+        updatedTask.importance = importance
+        updatedTask.date = finaldate
+        taskDao.updateTask(updatedTask)
 
+        getTasks()
+        taskAdapter.notifyDataSetChanged()
+
+    }
+    fun deleteTask(id:Int, title: String, notes: String, importance: Int, date: String?) {
+        var finalDate = date
+        if (date == "") {
+            finalDate = null
+        }
+        val TaskToDelete = Task(id,title,notes,importance,finalDate)
+        taskDao.deleteTask(TaskToDelete)
+        taskAdapter.notifyDataSetChanged()
+    }
     fun clearFilters(recyclerView: RecyclerView){
         filteredTasks = tasks.filter {!it.completed }.toMutableList()
         taskAdapter.updateList(filteredTasks, recyclerView)
@@ -104,52 +114,39 @@ class TaskModel: ViewModel() {
     fun changeCompleted(id:Int, completed: Boolean){
         val task = tasks.first { it.id == id }
         task.completed = completed
+        //agregar completaod
+        taskDao.updateTask(task)
         taskAdapter.notifyDataSetChanged()
-    }
-
-    fun createList(title: String, icon: Int, colorId: Int, context: Context){
-        val resourceName: String = context.resources.getResourceEntryName(icon)
-        listDb.add(
-            TaskListDB(lists.size+1, title, colorId, resourceName)
-        )
-    }
-
-    fun getChangedFieldsInList(original: TaskList, updated: TaskList): Map<String, Any?> {
-        val changes = mutableMapOf<String, Any?>()
-
-        if (original.name != updated.name) changes["name"] = updated.name
-        if (original.icon != updated.icon) changes["icon"] = updated.icon
-        if (original.color != updated.color) changes["color"] = updated.color
-        return changes
-    }
-
-    fun editList(id: Int, name: String, icon: Int, colorId: Int, context: Context){
-        val oldList = lists.first { it.id == id }
-        val updatedList = TaskList(id, name, colorId, icon)
-
-        val listDb = listDb.first { it.id == id }
-
-        val changes = getChangedFieldsInList(oldList, updatedList)
-        Log.i("CAMBIOS HAY EN MIII", changes.toString())
-        val resourceName: String = context.resources.getResourceEntryName(icon)
-
-        changes.forEach { (key, value) ->
-            when (key) {
-                "name" -> listDb.name = value as String
-                "icon" -> listDb.icon = resourceName
-                "color" -> listDb.color = value as Int
-            }
-        }
     }
 
     fun getListFromDb(context: Context){
         lists.clear()
-        for (x in listDb){
-            val photoId = context.resources.getIdentifier(x.icon, "drawable", context.packageName)
-            lists.add(TaskList(x.id, x.name, x.color, photoId))
+        lists.addAll(listDao.getAllUsersList(currentUserId))
+        for (list in lists){
+            val photoId = context.resources.getIdentifier(list.iconName, "drawable", context.packageName)
+            list.iconId = photoId
         }
     }
 
+    fun createList(title: String, icon: Int, colorId: Int, context: Context){
+        val resourceName: String = context.resources.getResourceEntryName(icon)
+        val newTask = TaskList(0, title, colorId, resourceName, icon, currentUserId)
+        listDao.addList(newTask)
+    }
+
+    fun editList(id: Int, name: String, icon: Int, colorId: Int, context: Context){
+        val resourceName: String = context.resources.getResourceEntryName(icon)
+        val updatedList = TaskList(id, name, colorId, resourceName, icon, currentUserId)
+        listDao.updateList(updatedList)
+        taskDao.updateTaskListColorInTasks(updatedList.id, colorId)
+        getTasks()
+    }
+    fun deleteList(id: Int, name: String, icon: Int, colorId: Int, context: Context){
+        val resourceName: String = context.resources.getResourceEntryName(icon)
+        val ListToDelete = TaskList(id, name, colorId, resourceName, icon, currentUserId)
+        listDao.deleteList(ListToDelete)
+        getTasks()
+    }
     fun filterByList(recyclerView: RecyclerView){
         filteredTasks = tasks.filter { it.listId == currentPage }.toMutableList()
         taskAdapter.updateList(filteredTasks, recyclerView)
