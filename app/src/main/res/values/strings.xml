@@ -33,6 +33,7 @@
     <string name="taskDateLimit">Fecha de vencimiento</string>
     <string name="save">Guardar</string>
     <string name="cancel">Cancelar</string>
+    <string name="eliminar">Eliminar</string>
     <string name="completedConfirmation">Se ha marcado la tarea como completada</string>
 
     <string name="saveDate">Guardar fecha</string>
@@ -46,5 +47,8 @@
     </array>
 
     <string name="editTask">Editar tarea</string>
-
+    <string name="removeImportance">Quitar nivel de importancia</string>
+    <string name="removeDate">Quitar nivel de importancia</string>
+    <string name="markCompleted">Marcar como completada</string>
+    <string name="deleteTask">Eliminar tarea</string>
 </resources>

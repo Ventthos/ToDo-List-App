@@ -21,18 +21,7 @@ class TaskModel: ViewModel() {
     lateinit var userDao: UserDao
 
     //Aqui jalariamos los elementos de la base de datos para meterlos a una lista
-    private val tasks = mutableListOf(
-        Task(id = 1, title = "Comprar leche", notes = "Ir al supermercado", importance = 2, date = "2025-03-24", listId = 1, colorId = 0),
-        Task(id = 2, title = "Estudiar Kotlin", notes = "Repasar funciones de extensión y lambdas", importance = 3, date = "2025-03-25", listId = 1, colorId = 0),
-        Task(id = 3, title = "Llamar a mamá", notes = "Preguntar cómo está", importance = 1, date = "2025-03-24", listId = 2, colorId = 1),
-        Task(id = 4, title = "Preparar presentación", notes = "Revisar las diapositivas", importance = 3, date = "2025-03-26", listId = 1, colorId = 0),
-        Task(id = 5, title = "Hacer ejercicio", notes = "Correr 5 km en el parque", importance = 2, date = "2025-03-27", listId = 1, colorId = 0),
-        Task(id = 6, title = "Pagar factura de luz", notes = "Realizar pago online", importance = 3, date = "2025-03-28", listId = 1, colorId = 0),
-        Task(id = 7, title = "Comprar regalo de cumpleaños", notes = "Buscar algo original", importance = 3, date = "2025-03-30", listId = 1, colorId = 0),
-        Task(id = 8, title = "Revisar emails", notes = "Responder a correos urgentes", importance = 2, date = "2025-03-24", listId = 1, colorId = 0),
-        Task(id = 9, title = "Ir al médico", notes = "Chequeo general anual", importance = 3, date = "2025-03-29", listId = 1, colorId = 0),
-        Task(id = 10, title = "Limpiar la casa", notes = "Aspirar y ordenar las habitaciones", importance = 1, date = "2025-03-25", listId = 1, colorId = 0)
-    )
+    private val tasks = mutableListOf<Task>()
 
     var filteredTasks: MutableList<Task> = tasks
 
@@ -88,8 +77,11 @@ class TaskModel: ViewModel() {
         }
         val TaskToDelete = Task(id,title,notes,importance,finalDate)
         taskDao.deleteTask(TaskToDelete)
+
+        getTasks()
         taskAdapter.notifyDataSetChanged()
     }
+
     fun clearFilters(recyclerView: RecyclerView){
         filteredTasks = tasks.filter {!it.completed }.toMutableList()
         taskAdapter.updateList(filteredTasks, recyclerView)
@@ -114,7 +106,7 @@ class TaskModel: ViewModel() {
     fun changeCompleted(id:Int, completed: Boolean){
         val task = tasks.first { it.id == id }
         task.completed = completed
-        //agregar completaod
+        //agregar completa
         taskDao.updateTask(task)
         taskAdapter.notifyDataSetChanged()
     }
@@ -141,12 +133,16 @@ class TaskModel: ViewModel() {
         taskDao.updateTaskListColorInTasks(updatedList.id, colorId)
         getTasks()
     }
+
     fun deleteList(id: Int, name: String, icon: Int, colorId: Int, context: Context){
+
         val resourceName: String = context.resources.getResourceEntryName(icon)
         val ListToDelete = TaskList(id, name, colorId, resourceName, icon, currentUserId)
         listDao.deleteList(ListToDelete)
         getTasks()
+
     }
+
     fun filterByList(recyclerView: RecyclerView){
         filteredTasks = tasks.filter { it.listId == currentPage }.toMutableList()
         taskAdapter.updateList(filteredTasks, recyclerView)

@@ -51,6 +51,7 @@ class ListDialogFragment : DialogFragment(), IconPicker.IconPickerListener{
 
     interface ListEditorListener {
         fun onListEdited(id: Int, title: String, icon: Int, colorId: Int, editing: Boolean)
+        fun onListDeleted(id: Int, title: String, icon: Int, colorId: Int, editing: Boolean)
     }
 
     private var listener: ListEditorListener? = null
@@ -60,9 +61,14 @@ class ListDialogFragment : DialogFragment(), IconPicker.IconPickerListener{
         listener = context as? ListEditorListener
     }
 
-    private fun sendValues(){
+    private fun sendValues(deleting: Boolean){
         val title = titleInput.text.toString()
         val color = spinner.selectedItem as? ColorObject
+
+        if(deleting){
+            listener?.onListDeleted(id, title, currentIcon, color?.colorId?: basicColors.first().colorId, editing)
+            return
+        }
 
         listener?.onListEdited(id, title, currentIcon, color?.colorId?: basicColors.first().colorId, editing)
     }
@@ -109,13 +115,16 @@ class ListDialogFragment : DialogFragment(), IconPicker.IconPickerListener{
 
             builder.setView(dialogView)
                 .setPositiveButton(R.string.save){ _,_ ->
-                    sendValues()
+                    sendValues(false)
+                    dialog?.dismiss()
+                }
+                .setNegativeButton(R.string.cancel){ _,_ ->
                     dialog?.dismiss()
                 }
 
             if(editing){
-                builder.setNeutralButton("Eliminar"){_,_->
-
+                builder.setNeutralButton(R.string.eliminar){_,_->
+                    sendValues(true)
                 }
             }
 

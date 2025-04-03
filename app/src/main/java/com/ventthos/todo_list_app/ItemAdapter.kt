@@ -8,14 +8,17 @@ import android.view.ViewGroup
 import android.widget.CheckBox
 import android.widget.LinearLayout
 import android.widget.TextView
+import androidx.appcompat.app.AppCompatActivity
 import androidx.cardview.widget.CardView
 import androidx.recyclerview.widget.RecyclerView
 import com.ventthos.todo_list_app.db.dataclasses.Task
 
 //Adaptador para la clase Item
-class ItemAdapter(private val itemList: MutableList<Task>,
-                  private val listener: OnTaskCheckedChangeListener,
-                  private val listenerClick: OnTaskClickForEditListener
+class ItemAdapter(
+    val itemList: MutableList<Task>,
+    private val listener: OnTaskCheckedChangeListener,
+    private val listenerClick: OnTaskClickForEditListener,
+    val activity: AppCompatActivity
 ) : RecyclerView.Adapter<ItemAdapter.ItemViewHolder>() {
 
     lateinit var inflater: LayoutInflater
@@ -29,11 +32,17 @@ class ItemAdapter(private val itemList: MutableList<Task>,
         val infoContainer: LinearLayout = view.findViewById(R.id.infoContainer)
         val checkBoxContainer: LinearLayout = view.findViewById(R.id.checkContainer)
         val cardRoot: CardView = view.findViewById(R.id.taskRoot)
+
+
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ItemViewHolder {
         val view = LayoutInflater.from(parent.context).inflate(R.layout.task_item, parent, false)
         inflater = LayoutInflater.from(parent.context)
+
+
+        activity.registerForContextMenu(view)
+
         return ItemViewHolder(view)
     }
 
@@ -74,6 +83,12 @@ class ItemAdapter(private val itemList: MutableList<Task>,
         // Edit
         holder.cardRoot.setOnClickListener{
             listenerClick.OnTaskClickForEdit(item)
+        }
+
+        // Context menu
+        holder.cardRoot.setOnLongClickListener {
+            it.showContextMenu()
+            true
         }
     }
 

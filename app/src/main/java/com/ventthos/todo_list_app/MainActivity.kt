@@ -2,10 +2,12 @@ package com.ventthos.todo_list_app
 
 import android.os.Bundle
 import android.util.Log
+import android.view.ContextMenu
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import android.widget.TextView
+import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.app.AppCompatActivity
@@ -43,6 +45,7 @@ class MainActivity : AppCompatActivity(), TaskDialogFragment.TaskEditListener, L
     lateinit var pageTitle: TextView
     lateinit var coordinatorLayout: CoordinatorLayout
     private val taskModel: TaskModel by viewModels()
+    private var itemPosition = -1
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -86,7 +89,7 @@ class MainActivity : AppCompatActivity(), TaskDialogFragment.TaskEditListener, L
         recyclerView = findViewById(R.id.recyclerView)
         recyclerView.layoutManager = LinearLayoutManager(this)
 
-        taskModel.taskAdapter = ItemAdapter(taskModel.filteredTasks.toMutableList(), this, this)
+        taskModel.taskAdapter = ItemAdapter(taskModel.filteredTasks.toMutableList(), this, this, this)
         recyclerView.adapter = taskModel.taskAdapter
         //termina logia del recicler view
 
@@ -206,16 +209,21 @@ class MainActivity : AppCompatActivity(), TaskDialogFragment.TaskEditListener, L
 
         if(!editing){
             taskModel.createList(title, icon, colorId, this)
-            taskModel.getListFromDb(this)
-            redrawLists()
         }
         else{
             Log.i("Me dan:", colorId.toString())
             taskModel.editList(id, title, icon, colorId, this)
-            taskModel.getListFromDb(this)
-            redrawLists()
-            runFilters()
         }
+        taskModel.getListFromDb(this)
+        redrawLists()
+        runFilters()
+    }
+
+    override fun onListDeleted(id: Int, title: String, icon: Int, colorId: Int, editing: Boolean) {
+        taskModel.deleteList(id, title, icon, colorId, this)
+        taskModel.getListFromDb(this)
+        redrawLists()
+        taskModel.currentPage = -1
         runFilters()
     }
 
@@ -279,5 +287,35 @@ class MainActivity : AppCompatActivity(), TaskDialogFragment.TaskEditListener, L
         }
 
         else -> super.onOptionsItemSelected(item)
+    }
+
+    override fun onCreateContextMenu(
+        menu: ContextMenu?,
+        v: View?,
+        menuInfo: ContextMenu.ContextMenuInfo?
+    ) {
+        super.onCreateContextMenu(menu, v, menuInfo)
+
+        menuInflater.inflate(R.menu.context_menu, menu)
+
+        val vh = recyclerView.getChildViewHolder(v!!) as ItemAdapter.ItemViewHolder
+        itemPosition = vh.adapterPosition
+    }
+
+    override fun onContextItemSelected(item: MenuItem): Boolean {
+        if (itemPosition == -1) return super.onContextItemSelected(item)
+
+        val task = taskModel.taskAdapter.itemList[itemPosition] // Obtiene la tarea seleccionada
+
+        return when (item.itemId) {
+            R.id.deleteActionMenu ->{
+                taskModel.deleteTask(task.id, task.title, task.notes, task.importance, task.date)
+                runFilters()
+                true
+            }
+            else->{
+                false
+            }
+        }
     }
 }

@@ -18,6 +18,7 @@ interface TaskListDao {
 
     @Update(onConflict = OnConflictStrategy.REPLACE)
     fun updateList(list: TaskList)
+
     @Delete
     fun deleteList(list: TaskList)
 }
