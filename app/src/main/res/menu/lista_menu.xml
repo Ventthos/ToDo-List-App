@@ -1,40 +1,43 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
-    <item android:title="@string/filtrateImportanceAscending"
-        android:icon="@drawable/order_by_importance_ascending"
-        app:showAsAction="ifRoom"
-        android:iconTint="@color/white"/>
 
-    <item android:title="@string/filtrateImportanceDescending"
-        android:icon="@drawable/order_by_importance_descending"
+    <item android:title="@string/ordenateList"
         app:showAsAction="ifRoom"
-        android:iconTint="@color/white"/>
-
-    <item android:title="@string/filtrateTimeAscending"
-        android:icon="@drawable/order_by_time_ascending"
-        app:showAsAction="ifRoom"
-        android:iconTint="@color/white"/>
-
-    <item android:title="@string/filtrateTimeDescending"
-        android:icon="@drawable/order_by_time_descending"
-        app:showAsAction="ifRoom"
-        android:iconTint="@color/white"/>
+        android:icon="@drawable/ordenar"
+        >
+        <menu>
+            <item android:title="@string/byImportance">
+                <menu>
+                    <item android:title="@string/descending"
+                        app:showAsAction="ifRoom"
+                        android:id="@+id/order_by_importance_descending_menu"/>
+                    <item android:title="@string/ascending"
+                        app:showAsAction="ifRoom"
+                        android:id="@+id/order_by_importance_ascending_menu"/>
+                </menu>
+            </item>
+            <item android:title="@string/byTime">
+                <menu>
+                    <item android:title="@string/descending"
+                        app:showAsAction="ifRoom"
+                        android:id="@+id/order_by_date_descending_menu"/>
+                    <item android:title="@string/ascending"
+                        app:showAsAction="ifRoom"
+                        android:id="@+id/order_by_date_ascending_menu"/>
+                </menu>
+            </item>
+        </menu>
+    </item>
 
     <item android:title="@string/showCompleted"
         android:icon="@drawable/show_completed"
         app:showAsAction="ifRoom"
-        android:iconTint="@color/white"/>
-
-    <item android:title="@string/dontShowCompleted"
-        android:icon="@drawable/hide_completed"
-        app:showAsAction="ifRoom"
-        android:iconTint="@color/white"/>
+        android:id="@+id/show_completed_menu"/>
 
     <item android:title="@string/editList"
         android:icon="@drawable/edit"
         app:showAsAction="ifRoom"
-        android:iconTint="@color/white"
         android:id="@+id/editList_nav"/>
 
 </menu>

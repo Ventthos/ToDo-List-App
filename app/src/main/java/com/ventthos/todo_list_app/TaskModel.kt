@@ -2,6 +2,7 @@ package com.ventthos.todo_list_app
 
 import android.content.Context
 import android.util.Log
+import android.widget.Spinner
 import androidx.lifecycle.ViewModel
 import androidx.recyclerview.widget.RecyclerView
 import com.ventthos.todo_list_app.db.Daos.TaskDao
@@ -10,11 +11,20 @@ import com.ventthos.todo_list_app.db.Daos.UserDao
 import com.ventthos.todo_list_app.db.dataclasses.TaskList
 import com.ventthos.todo_list_app.db.dataclasses.Task
 
-//Clase para los items dentro de el recicler view
+enum class SortOrder {
+    DEFAULT,
+    IMPORTANCE_ASC,
+    IMPORTANCE_DESC,
+    DATE_ASC,
+    DATE_DESC
+}
 
 class TaskModel: ViewModel() {
 
     var currentUserId = -1
+
+    var currentSortOrder: SortOrder = SortOrder.DEFAULT
+    var onlyCompleted = true
 
     lateinit var taskDao: TaskDao
     lateinit var listDao: TaskListDao
@@ -54,6 +64,7 @@ class TaskModel: ViewModel() {
 
 
     fun editTask(id:Int, title: String, notes: String, importance: Int, date: String?) {
+        Log.i("Oyee", "Me estan pasando ${id}")
         var finaldate = date
         if (date == ""){
             finaldate = null
@@ -65,7 +76,7 @@ class TaskModel: ViewModel() {
         updatedTask.importance = importance
         updatedTask.date = finaldate
 
-        task.colorId = lists.first { it.id == task.colorId }.color
+        task.colorId = lists.first { it.id == task.listId }.color
         taskDao.updateTask(updatedTask)
 
         getTasks()
@@ -103,6 +114,37 @@ class TaskModel: ViewModel() {
     fun filtrateCompleted(recyclerView: RecyclerView){
         filteredTasks = tasks.filter {it.completed}.toMutableList()
         taskAdapter.updateList(filteredTasks, recyclerView)
+    }
+
+    fun ordenateByImportance(descendingOrder: Boolean,recyclerView: RecyclerView){
+
+        if (descendingOrder){
+            filteredTasks.sortByDescending { it.importance }
+            currentSortOrder = SortOrder.IMPORTANCE_DESC
+        }
+        else{
+            filteredTasks.sortBy{ it.importance }
+            currentSortOrder = SortOrder.IMPORTANCE_ASC
+        }
+        taskAdapter.updateList(filteredTasks, recyclerView)
+    }
+
+    fun ordenateByDate(descendingOrder: Boolean = true,recyclerView: RecyclerView){
+        if(descendingOrder){
+            filteredTasks.sortByDescending { it.date }
+            currentSortOrder = SortOrder.DATE_DESC
+        }
+        else{
+            filteredTasks.sortBy{ it.date }
+            currentSortOrder = SortOrder.DATE_ASC
+        }
+        taskAdapter.updateList(filteredTasks, recyclerView)
+    }
+
+    fun setCompletedVisibility(hide: Boolean = true){
+        filteredTasks = tasks.filter { it.listId == currentPage && it.completed == hide }.toMutableList()
+        onlyCompleted = false
+        taskAdapter.notifyDataSetChanged()
     }
 
     fun changeCompleted(id:Int, completed: Boolean){

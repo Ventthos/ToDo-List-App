@@ -14,12 +14,22 @@
     <string name="addList">Agregar lista</string>
     <string name="openDrawerDesc">Abrir menú</string>
     <string name="closeDrawerDesc">Cerrar menú</string>
+
+    <string name="ordenateList">Ordenar lista</string>
+    <string name="byImportance">Por importancia</string>
+    <string name="byTime">Por fecha de vencimiento</string>
+    <string name="ascending">Ascendente</string>
+    <string name="descending">Descendente</string>
+    <!--
     <string name="filtrateImportanceDescending">Ordenar por importancia descendiente</string>
     <string name="filtrateImportanceAscending">Ordenar por importancia ascendente</string>
     <string name="filtrateTimeDescending">Ordenar por fecha de vencimiento descendiente</string>
     <string name="filtrateTimeAscending">Ordenar por fecha de vencimiento ascendiente</string>
+
+    -->
     <string name="showCompleted">Mostrar completadas</string>
     <string name="dontShowCompleted">No mostrar completadas</string>
+
     <string name="editList">Editar lista</string>
     <string name="createList">Crear Lista</string>
     <string name="listTitle">Título de la lista</string>

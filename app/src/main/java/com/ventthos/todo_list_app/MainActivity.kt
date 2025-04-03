@@ -19,6 +19,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.room.Room
 import androidx.room.RoomDatabase
+import androidx.room.util.query
 import androidx.sqlite.db.SupportSQLiteDatabase
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.navigation.NavigationView
@@ -27,6 +28,7 @@ import com.ventthos.todo_list_app.db.AppDatabase.AppDatabase
 import com.ventthos.todo_list_app.db.dataclasses.Task
 import com.ventthos.todo_list_app.db.dataclasses.TaskList
 
+
 interface OnTaskCheckedChangeListener {
     fun onTaskCheckedChanged(task: Task, isChecked: Boolean)
 }
@@ -34,6 +36,7 @@ interface OnTaskCheckedChangeListener {
 interface OnTaskClickForEditListener{
     fun OnTaskClickForEdit(task: Task)
 }
+
 
 class MainActivity : AppCompatActivity(), TaskDialogFragment.TaskEditListener, ListDialogFragment.ListEditorListener, OnTaskCheckedChangeListener, OnTaskClickForEditListener {
     lateinit var navigationView: NavigationView
@@ -133,7 +136,7 @@ class MainActivity : AppCompatActivity(), TaskDialogFragment.TaskEditListener, L
                 }
             }
             changePageStyles()
-            runFilters()
+            runFilters(true)
             drawerLayout.closeDrawer(GravityCompat.START)
             true
         }
@@ -236,7 +239,7 @@ class MainActivity : AppCompatActivity(), TaskDialogFragment.TaskEditListener, L
         }
     }
 
-    fun runFilters(){
+    fun runFilters(goDetault:Boolean = false){
         when (taskModel.currentPage) {
             -1 ->{
                 taskModel.clearFilters(recyclerView)
@@ -255,6 +258,8 @@ class MainActivity : AppCompatActivity(), TaskDialogFragment.TaskEditListener, L
             }
         }
 
+        if(goDetault) taskModel.currentSortOrder = SortOrder.DEFAULT
+        runOrder(taskModel.currentSortOrder)
     }
 
     override fun onTaskCheckedChanged(task: Task, isChecked: Boolean) {
@@ -285,8 +290,37 @@ class MainActivity : AppCompatActivity(), TaskDialogFragment.TaskEditListener, L
             ListDialogFragment.setArguments(list.id.hashCode(), list.name, list.iconId, list.color).show(supportFragmentManager,"EditList")
             true
         }
-
+        R.id.order_by_importance_descending_menu->{
+            taskModel.currentSortOrder = SortOrder.IMPORTANCE_DESC
+            runOrder(taskModel.currentSortOrder)
+            true
+        }
+        R.id.order_by_importance_ascending_menu->{
+            taskModel.currentSortOrder = SortOrder.IMPORTANCE_ASC
+            runOrder(taskModel.currentSortOrder)
+            true
+        }
+        R.id.order_by_date_descending_menu->{
+            taskModel.currentSortOrder = SortOrder.DATE_DESC
+            runOrder(taskModel.currentSortOrder)
+            true
+        }
+        R.id.order_by_date_ascending_menu->{
+            taskModel.currentSortOrder = SortOrder.DATE_ASC
+            runOrder(taskModel.currentSortOrder)
+            true
+        }
         else -> super.onOptionsItemSelected(item)
+    }
+
+    fun runOrder(order: SortOrder){
+        when(order){
+            SortOrder.IMPORTANCE_DESC->taskModel.ordenateByImportance(true, recyclerView)
+            SortOrder.IMPORTANCE_ASC -> taskModel.ordenateByImportance(false, recyclerView)
+            SortOrder.DATE_DESC -> taskModel.ordenateByDate(true, recyclerView)
+            SortOrder.DATE_ASC ->  taskModel.ordenateByDate(false, recyclerView)
+            SortOrder.DEFAULT -> {}
+        }
     }
 
     override fun onCreateContextMenu(
