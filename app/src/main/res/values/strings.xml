@@ -51,4 +51,18 @@
     <string name="removeDate">Quitar nivel de importancia</string>
     <string name="markCompleted">Marcar como completada</string>
     <string name="deleteTask">Eliminar tarea</string>
+
+    <string name="login_title">¿Ya tienes una cuenta?</string>
+    <string name="email_hint">Email</string>
+    <string name="password_hint">Password</string>
+    <string name="login_button">LOGIN</string>
+    <string name="forgot_password">¿Olvidaste tu contraseña</string>
+    <string name="register_now">¿Nuevo usuario? Registrate</string>
+
+    <string name="register_title">Create tu cuenta</string>
+    <string name="name_hint">Name</string>
+    <string name="confirm_password_hint">Confirm Password</string>
+    <string name="register_button">REGISTRAR</string>
+    <string name="already_have_account">Already have an account? Login</string>
+    <string name="lastname_hint">Last Name</string>
 </resources>

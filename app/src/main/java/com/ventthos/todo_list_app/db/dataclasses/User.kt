@@ -9,5 +9,6 @@ data class User(
     var name:String,
     var lastName:String,
     var email:String?,
+    val password: String,
     var avatar:Int
 )
