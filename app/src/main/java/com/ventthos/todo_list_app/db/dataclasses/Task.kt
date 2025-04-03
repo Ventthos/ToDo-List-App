@@ -24,5 +24,5 @@ data class Task(
     var date: String?,
     var completed: Boolean = false,
     val listId: Int = 0,
-    val colorId: Int = 0
+    var colorId: Int = 0
 )

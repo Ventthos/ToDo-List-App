@@ -64,6 +64,8 @@ class TaskModel: ViewModel() {
         updatedTask.notes = notes
         updatedTask.importance = importance
         updatedTask.date = finaldate
+
+        task.colorId = lists.first { it.id == task.colorId }.color
         taskDao.updateTask(updatedTask)
 
         getTasks()
