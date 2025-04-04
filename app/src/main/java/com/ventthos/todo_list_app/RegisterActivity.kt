@@ -10,7 +10,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
-class RegisterActivity : AppCompatActivity() {
+class RegisterActivity : AppCompatActivity(), IconPicker.IconPickerListener {
 
     private lateinit var nameInput: EditText
     private lateinit var lastNameInput: EditText
@@ -18,6 +18,10 @@ class RegisterActivity : AppCompatActivity() {
     private lateinit var passwordInput: EditText
     private lateinit var confirmPasswordInput: EditText
     private lateinit var registerButton: Button
+    private lateinit var avatarImage: ImageView
+    private lateinit var avatarText: TextView
+
+    private var selectedAvatarId: Int = R.drawable.ic_launcher_foreground // valor por defecto
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -29,9 +33,17 @@ class RegisterActivity : AppCompatActivity() {
         passwordInput = findViewById(R.id.register_password)
         confirmPasswordInput = findViewById(R.id.register_confirm_password)
         registerButton = findViewById(R.id.button_register)
+        avatarImage = findViewById(R.id.avatarImage)
+        avatarText = findViewById(R.id.avatarText)
 
         val db = AppDatabase.getDatabase(this)
         val userDao = db.UserDao()
+
+        // click en el avatar para mostrar el selector (no funciona aun)
+        avatarImage.setOnClickListener {
+            val iconPicker = IconPicker()
+            iconPicker.show(supportFragmentManager, "iconPicker")
+        }
 
         registerButton.setOnClickListener {
             val name = nameInput.text.toString().trim()
@@ -58,7 +70,6 @@ class RegisterActivity : AppCompatActivity() {
 
             CoroutineScope(Dispatchers.IO).launch {
                 val existingUser = userDao.getUserByEmail(email)
-
                 if (existingUser != null) {
                     runOnUiThread {
                         Toast.makeText(this@RegisterActivity, "Ese correo ya está registrado", Toast.LENGTH_SHORT).show()
@@ -70,9 +81,9 @@ class RegisterActivity : AppCompatActivity() {
                         lastName = lastName,
                         email = email,
                         password = password,
-                        avatar = R.drawable.ic_launcher_foreground
+                        avatar = selectedAvatarId
                     )
-
+                    
                     userDao.insertUser(newUser)
 
                     runOnUiThread {
@@ -85,5 +96,10 @@ class RegisterActivity : AppCompatActivity() {
                 }
             }
         }
+    }
+
+    override fun onIconSelected(id: Int) {
+        selectedAvatarId = id
+        avatarImage.setImageResource(id)
     }
 }
