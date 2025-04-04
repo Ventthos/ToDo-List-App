@@ -9,7 +9,7 @@ import com.ventthos.todo_list_app.db.dataclasses.Task
 import com.ventthos.todo_list_app.db.dataclasses.TaskList
 import com.ventthos.todo_list_app.db.dataclasses.User
 
-@Database(entities = [User::class, Task::class, TaskList::class], version = 2)
+@Database(entities = [User::class, Task::class, TaskList::class], version = 3)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun UserDao() : UserDao
     abstract fun TaskListDao() : TaskListDao
@@ -25,7 +25,9 @@ abstract class AppDatabase : RoomDatabase() {
                     context.applicationContext,
                     AppDatabase::class.java,
                     "todo_list_database"
-                ).build()
+                )
+                    .fallbackToDestructiveMigration()
+                    .build()
                 INSTANCE = instance
                 instance
             }
