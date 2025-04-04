@@ -34,11 +34,9 @@ class LoginActivity : AppCompatActivity() {
         val userDao = db.UserDao()
         val sessionDao = db.sessionDao()
 
-        // 🔐 Verificar si ya hay una sesión activa
+        // Verificar si ya hay una sesión activa
         CoroutineScope(Dispatchers.IO).launch {
             val session = sessionDao.getActiveSession()
-            Log.d("LoginActivity", "Sesión activa encontrada: ${session?.userId}")
-
             if (session != null) {
                 val intent = Intent(this@LoginActivity, MainActivity::class.java)
                 intent.putExtra("userId", session.userId)
@@ -46,8 +44,6 @@ class LoginActivity : AppCompatActivity() {
                 finish()
             }
         }
-
-        // ✅ Login manual
         loginButton.setOnClickListener {
             val email = emailInput.text.toString().trim()
             val password = passwordInput.text.toString()
@@ -56,23 +52,19 @@ class LoginActivity : AppCompatActivity() {
                 Toast.makeText(this, "Completa todos los campos", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
-
             if (!Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
                 Toast.makeText(this, "Correo inválido", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
-
             if (password.length < 6) {
                 Toast.makeText(this, "La contraseña debe tener al menos 6 caracteres", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
-
             CoroutineScope(Dispatchers.IO).launch {
                 val user = userDao.getUserByEmail(email)
 
                 runOnUiThread {
                     if (user != null && user.password == password) {
-                        // Guardar la sesión en la BD
                         CoroutineScope(Dispatchers.IO).launch {
                             sessionDao.clearSession()
                             sessionDao.insertSession(Session(userId = user.id))
@@ -87,7 +79,8 @@ class LoginActivity : AppCompatActivity() {
                             this@LoginActivity,
                             "Correo o contraseña incorrectos",
                             Toast.LENGTH_SHORT
-                        ).show()
+                        )
+                            .show()
                     }
                 }
             }

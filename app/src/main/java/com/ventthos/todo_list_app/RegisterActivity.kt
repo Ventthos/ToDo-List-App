@@ -3,6 +3,7 @@ package com.ventthos.todo_list_app
 import android.app.Dialog
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import android.view.ViewGroup
 import android.widget.*
@@ -10,6 +11,9 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.room.Room
 import com.ventthos.todo_list_app.db.AppDatabase.AppDatabase
 import com.ventthos.todo_list_app.db.dataclasses.User
+import com.google.android.gms.auth.api.signin.*
+import com.google.android.gms.common.SignInButton
+import com.google.android.gms.common.api.ApiException
 
 class RegisterActivity : AppCompatActivity() {
 
@@ -21,9 +25,12 @@ class RegisterActivity : AppCompatActivity() {
     private lateinit var registerButton: Button
     private lateinit var avatarImage: ImageView
     private lateinit var avatarText: TextView
+    private lateinit var googleSignInButton: SignInButton
+    private lateinit var googleSignInClient: GoogleSignInClient
 
     private lateinit var avatarDialog: Dialog
     private var selectedAvatarResId: Int = R.drawable.mark
+    private val RC_SIGN_IN = 1001
 
     private val avatarList = listOf(
         R.drawable.xmen,
@@ -52,9 +59,23 @@ class RegisterActivity : AppCompatActivity() {
         registerButton = findViewById(R.id.button_register)
         avatarImage = findViewById(R.id.avatarImage)
         avatarText = findViewById(R.id.avatarText)
+        googleSignInButton = findViewById(R.id.googleSignInButton)
+
+        val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+            .requestEmail()
+            .build()
+
+        googleSignInClient = GoogleSignIn.getClient(this, gso)
+
+        googleSignInButton.setOnClickListener {
+            // pa que cierre sesión si o si alv
+            googleSignInClient.signOut().addOnCompleteListener {
+                val signInIntent = googleSignInClient.signInIntent
+                startActivityForResult(signInIntent, RC_SIGN_IN)
+            }
+        }
 
         avatarImage.setOnClickListener { showAvatarDialog() }
-
         registerButton.setOnClickListener {
             val name = nameEditText.text.toString()
             val lastName = lastNameEditText.text.toString()
@@ -66,12 +87,10 @@ class RegisterActivity : AppCompatActivity() {
                 Toast.makeText(this, getString(R.string.fill_all_fields), Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
-
             if (password != confirmPassword) {
                 Toast.makeText(this, getString(R.string.passwords_do_not_match), Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
-
             val db = Room.databaseBuilder(
                 applicationContext,
                 AppDatabase::class.java,
@@ -91,13 +110,33 @@ class RegisterActivity : AppCompatActivity() {
 
             db.UserDao().insertUser(newUser)
             val createdUser = db.UserDao().getUserByEmail(email)
-
             Toast.makeText(this, "Usuario registrado con éxito", Toast.LENGTH_SHORT).show()
-
             val intent = Intent(this, LoginActivity::class.java)
             intent.putExtra("userId", createdUser?.id ?: -1)
             startActivity(intent)
             finish()
+        }
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode == RC_SIGN_IN) {
+            val task = GoogleSignIn.getSignedInAccountFromIntent(data)
+            try {
+                val account: GoogleSignInAccount = task.getResult(ApiException::class.java)
+
+                val fullName = account.displayName ?: ""
+                val givenName = account.givenName ?: ""
+                val familyName = account.familyName ?: ""
+
+                nameEditText.setText(givenName.ifEmpty { fullName.split(" ").firstOrNull() ?: "" })
+                lastNameEditText.setText(familyName.ifEmpty { fullName.split(" ").drop(1).joinToString(" ") })
+                emailEditText.setText(account.email)
+
+            } catch (e: ApiException) {
+                Toast.makeText(this, "Error al iniciar con Google: ${e.statusCode}", Toast.LENGTH_SHORT).show()
+                Log.e("GoogleSignIn", "Fallo: ", e)
+            }
         }
     }
 
@@ -124,11 +163,9 @@ class RegisterActivity : AppCompatActivity() {
                     selectedAvatarResId = avatarList[position]
                     avatarDialog.dismiss()
                 }
-
                 return imageView
             }
         }
-
         avatarDialog.show()
     }
 }

@@ -17,11 +17,17 @@
         android:theme="@style/Theme.ToDo_List_app"
         tools:targetApi="31">
 
+        <!-- Google Sign-In -->
+        <meta-data
+            android:name="com.google.android.gms.client_id"
+            android:value="370190433044-e405t78j68cc7eutnslgl0p39fju8gee.apps.googleusercontent.com" />
+
         <!-- Firebase Config -->
         <meta-data
             android:name="com.google.firebase.messaging.default_notification_channel_id"
             android:value="@string/default_notification_channel_id"/>
 
+        <!-- Actividades -->
         <activity android:name=".LoginActivity" android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
