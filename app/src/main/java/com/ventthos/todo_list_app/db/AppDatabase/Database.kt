@@ -9,9 +9,29 @@ import com.ventthos.todo_list_app.db.dataclasses.Task
 import com.ventthos.todo_list_app.db.dataclasses.TaskList
 import com.ventthos.todo_list_app.db.dataclasses.User
 
-@Database(entities = [User::class, Task::class, TaskList::class], version = 2)
+@Database(entities = [User::class, Task::class, TaskList::class], version = 3)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun UserDao() : UserDao
     abstract fun TaskListDao() : TaskListDao
     abstract fun TaskDao() : TaskDao
+
+    companion object {
+        @Volatile
+        private var INSTANCE: AppDatabase? = null
+
+        fun getDatabase(context: android.content.Context): AppDatabase {
+            return INSTANCE ?: synchronized(this) {
+                val instance = androidx.room.Room.databaseBuilder(
+                    context.applicationContext,
+                    AppDatabase::class.java,
+                    "todo_list_database"
+                )
+                    .fallbackToDestructiveMigration()
+                    .build()
+                INSTANCE = instance
+                instance
+            }
+        }
+    }
 }
+

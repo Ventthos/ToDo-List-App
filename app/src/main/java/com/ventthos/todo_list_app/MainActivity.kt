@@ -59,16 +59,14 @@ class MainActivity : AppCompatActivity(), TaskDialogFragment.TaskEditListener, L
         val db = Room.databaseBuilder(
             applicationContext,
             AppDatabase::class.java,
-            "library"
-
+            "todo_list_database"
         )
+            .fallbackToDestructiveMigration()
             .allowMainThreadQueries()
             .addCallback(object : RoomDatabase.Callback() {
                 override fun onCreate(db: SupportSQLiteDatabase) {
                     super.onCreate(db)
-
-                    db.execSQL("INSERT INTO user(id, name, lastName, email, avatar) VALUES (1,'Victor', 'Ez Calante', 'correo@dominio.com', 1)")
-
+                   
                 }
             })
             .build()

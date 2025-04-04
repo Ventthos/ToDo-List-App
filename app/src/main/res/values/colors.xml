@@ -6,4 +6,9 @@
     <color name="mainColorBackgroud">#C8E2FA</color>
     <color name="mercury">#e2e2e2</color>
     <color name="silver">#cbcbcb</color>
+
+    <color name="colorPrimary">#8E2DE2</color>
+    <color name="colorSecondary">#4A00E0</color>
+    <color name="hintText">#CCCCCC</color>
+    <color name="secondaryText">#D1C4E9</color>
 </resources>
