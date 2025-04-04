@@ -16,7 +16,7 @@ interface UserDao {
     fun getAllUsers() : List<User>
 
     @Query("SELECT * FROM user WHERE id = :userId")
-    fun getUserById(userId: String): User?
+    fun getUserById(userId: Int): User?
 
     @Delete
     fun deleteUser(user: User)

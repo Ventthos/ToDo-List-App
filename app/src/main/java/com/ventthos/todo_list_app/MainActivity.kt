@@ -26,6 +26,8 @@ import com.google.android.material.snackbar.Snackbar
 import com.ventthos.todo_list_app.db.AppDatabase.AppDatabase
 import com.ventthos.todo_list_app.db.dataclasses.Task
 import com.ventthos.todo_list_app.db.dataclasses.TaskList
+import android.widget.Button
+import android.content.Intent
 
 interface OnTaskCheckedChangeListener {
     fun onTaskCheckedChanged(task: Task, isChecked: Boolean)
@@ -79,7 +81,14 @@ class MainActivity : AppCompatActivity(), TaskDialogFragment.TaskEditListener, L
         val insertTaskId = tasks.size + 1
         taskDao.addTask(Task(insertTaskId,"Hacer la db", "No se como aa", 3,"2025-06-25",false, insertTaskListId,1))
         */
-        taskModel.currentUserId = 1
+        val userId = intent.getIntExtra("userId", -1)
+        if (userId != -1) {
+            taskModel.currentUserId = userId
+        } else {
+            Toast.makeText(this, "Error al obtener usuario", Toast.LENGTH_SHORT).show()
+            finish()
+            return
+        }
 
         //termina logica db
         //Logica del reciclerView
@@ -103,6 +112,18 @@ class MainActivity : AppCompatActivity(), TaskDialogFragment.TaskEditListener, L
 
         setSupportActionBar(findViewById(R.id.toolbar))
 
+        val headerView = navigationView.getHeaderView(0)
+
+        // Mostramos nombre y correo del usuario
+        val nameTextView = headerView.findViewById<TextView>(R.id.nav_header_name)
+        val emailTextView = headerView.findViewById<TextView>(R.id.nav_header_email)
+
+        val currentUser = taskModel.userDao.getUserById(taskModel.currentUserId)
+        if (currentUser != null) {
+            nameTextView.text = "${currentUser.name} ${currentUser.lastName}"
+            emailTextView.text = currentUser.email ?: ""
+        }
+
         // Drawer configuration
         drawerToggle = ActionBarDrawerToggle(this, drawerLayout, toolbar, R.string.openDrawerDesc, R.string.closeDrawerDesc)
         drawerLayout.addDrawerListener(drawerToggle)
@@ -125,6 +146,12 @@ class MainActivity : AppCompatActivity(), TaskDialogFragment.TaskEditListener, L
                 }
                 R.id.nav_completed->{
                     taskModel.currentPage = -4
+                }
+                R.id.nav_logout -> {
+                    val intent = Intent(this, LoginActivity::class.java)
+                    intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                    startActivity(intent)
+                    true
                 }
                 else->{
                     taskModel.currentPage = menuItem.itemId

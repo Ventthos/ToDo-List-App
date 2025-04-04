@@ -24,7 +24,6 @@ class LoginActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_login)
 
-        // Vincular elementos del layout
         emailInput = findViewById(R.id.get_email_login)
         passwordInput = findViewById(R.id.get_pass_login)
         loginButton = findViewById(R.id.Login_button)
@@ -56,14 +55,12 @@ class LoginActivity : AppCompatActivity() {
             CoroutineScope(Dispatchers.IO).launch {
                 val user = userDao.getUserByEmail(email)
 
-                // Opcional: retraso mínimo para mitigar fuerza bruta
-                // delay(300)
-
                 runOnUiThread {
                     if (user != null && user.password == password) {
                         Toast.makeText(this@LoginActivity, "Bienvenido ${user.name}", Toast.LENGTH_SHORT).show()
 
                         val intent = Intent(this@LoginActivity, MainActivity::class.java)
+                        intent.putExtra("userId", user.id) // 👈 Mandas el ID
                         startActivity(intent)
                         finish()
                     } else {

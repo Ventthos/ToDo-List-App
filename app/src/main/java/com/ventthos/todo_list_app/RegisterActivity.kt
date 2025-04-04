@@ -23,7 +23,6 @@ class RegisterActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_register)
 
-        // Referencias a los campos
         nameInput = findViewById(R.id.register_name)
         lastNameInput = findViewById(R.id.register_lastname)
         emailInput = findViewById(R.id.register_email)
@@ -47,6 +46,11 @@ class RegisterActivity : AppCompatActivity() {
                 return@setOnClickListener
             }
 
+            if (password.length < 6) {
+                Toast.makeText(this, "La contraseña debe tener al menos 6 caracteres", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+
             if (password != confirmPassword) {
                 Toast.makeText(this, "Las contraseñas no coinciden", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
@@ -60,7 +64,6 @@ class RegisterActivity : AppCompatActivity() {
                         Toast.makeText(this@RegisterActivity, "Ese correo ya está registrado", Toast.LENGTH_SHORT).show()
                     }
                 } else {
-                    // Crear nuevo usuario con avatar por defecto (puedes cambiar el número por una imagen real si quieres)
                     val newUser = User(
                         id = 0,
                         name = name,
