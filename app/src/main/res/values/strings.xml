@@ -67,4 +67,7 @@
     <string name="lastname_hint">Last Name</string>
     <string name="logout">Cerrar sesión</string>
     <string name="choose_avatar">Elegir avatar</string>
+
+    <string name="fill_all_fields">Por favor, completa todos los campos</string>
+    <string name="passwords_do_not_match">Las contraseñas no coinciden</string>
 </resources>

@@ -28,6 +28,7 @@ import com.ventthos.todo_list_app.db.dataclasses.Task
 import com.ventthos.todo_list_app.db.dataclasses.TaskList
 import android.widget.Button
 import android.content.Intent
+import android.widget.ImageView
 
 interface OnTaskCheckedChangeListener {
     fun onTaskCheckedChanged(task: Task, isChecked: Boolean)
@@ -114,14 +115,18 @@ class MainActivity : AppCompatActivity(), TaskDialogFragment.TaskEditListener, L
 
         val headerView = navigationView.getHeaderView(0)
 
-        // Mostramos nombre y correo del usuario
+        // Mostramos nombre, correo y avatar del usuario
         val nameTextView = headerView.findViewById<TextView>(R.id.nav_header_name)
         val emailTextView = headerView.findViewById<TextView>(R.id.nav_header_email)
+        val avatarImageView = headerView.findViewById<ImageView>(R.id.avatarImageView)
 
         val currentUser = taskModel.userDao.getUserById(taskModel.currentUserId)
         if (currentUser != null) {
             nameTextView.text = "${currentUser.name} ${currentUser.lastName}"
             emailTextView.text = currentUser.email ?: ""
+
+            val avatarResId = if (currentUser.avatar != 0) currentUser.avatar else R.drawable.mark
+            avatarImageView.setImageResource(avatarResId)
         }
 
         // Drawer configuration
