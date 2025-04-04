@@ -29,6 +29,10 @@ import com.ventthos.todo_list_app.db.dataclasses.TaskList
 import android.widget.Button
 import android.content.Intent
 import android.widget.ImageView
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 interface OnTaskCheckedChangeListener {
     fun onTaskCheckedChanged(task: Task, isChecked: Boolean)
@@ -82,11 +86,25 @@ class MainActivity : AppCompatActivity(), TaskDialogFragment.TaskEditListener, L
         val insertTaskId = tasks.size + 1
         taskDao.addTask(Task(insertTaskId,"Hacer la db", "No se como aa", 3,"2025-06-25",false, insertTaskListId,1))
         */
-        val userId = intent.getIntExtra("userId", -1)
+        val sessionDao = db.sessionDao()
+
+        val userId: Int = if (intent.hasExtra("userId")) {
+            intent.getIntExtra("userId", -1)
+        } else {
+            val session = sessionDao.getActiveSession()
+            if (session != null) {
+                session.userId
+            } else {
+                -1
+            }
+        }
+
         if (userId != -1) {
             taskModel.currentUserId = userId
         } else {
-            Toast.makeText(this, "Error al obtener usuario", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, "No hay sesión activa. Por favor, inicia sesión.", Toast.LENGTH_SHORT).show()
+            val intent = Intent(this, LoginActivity::class.java)
+            startActivity(intent)
             finish()
             return
         }
@@ -153,9 +171,16 @@ class MainActivity : AppCompatActivity(), TaskDialogFragment.TaskEditListener, L
                     taskModel.currentPage = -4
                 }
                 R.id.nav_logout -> {
-                    val intent = Intent(this, LoginActivity::class.java)
-                    intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-                    startActivity(intent)
+                    CoroutineScope(Dispatchers.IO).launch {
+                        val db = AppDatabase.getDatabase(this@MainActivity)
+                        db.sessionDao().clearSession()
+
+                        withContext(Dispatchers.Main) {
+                            val intent = Intent(this@MainActivity, LoginActivity::class.java)
+                            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                            startActivity(intent)
+                        }
+                    }
                     true
                 }
                 else->{
