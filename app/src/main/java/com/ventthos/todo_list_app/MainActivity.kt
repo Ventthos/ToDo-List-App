@@ -29,10 +29,6 @@ import com.ventthos.todo_list_app.db.dataclasses.TaskList
 import android.widget.Button
 import android.content.Intent
 import android.widget.ImageView
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 
 interface OnTaskCheckedChangeListener {
     fun onTaskCheckedChanged(task: Task, isChecked: Boolean)
@@ -171,16 +167,16 @@ class MainActivity : AppCompatActivity(), TaskDialogFragment.TaskEditListener, L
                     taskModel.currentPage = -4
                 }
                 R.id.nav_logout -> {
-                    CoroutineScope(Dispatchers.IO).launch {
-                        val db = AppDatabase.getDatabase(this@MainActivity)
+                    Thread {
+                        val db = AppDatabase.getDatabase(this)
                         db.sessionDao().clearSession()
 
-                        withContext(Dispatchers.Main) {
-                            val intent = Intent(this@MainActivity, LoginActivity::class.java)
+                        runOnUiThread {
+                            val intent = Intent(this, LoginActivity::class.java)
                             intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
                             startActivity(intent)
                         }
-                    }
+                    }.start()
                     true
                 }
                 else->{
