@@ -12,6 +12,9 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.cardview.widget.CardView
 import androidx.recyclerview.widget.RecyclerView
 import com.ventthos.todo_list_app.db.dataclasses.Task
+import java.text.SimpleDateFormat
+import java.util.*
+
 
 //Adaptador para la clase Item
 class ItemAdapter(
@@ -73,8 +76,26 @@ class ItemAdapter(
             listener.onTaskCheckedChanged(item, isChecked)
         }
 
+        var vencida = false
+        val dateString = item.date ?: ""
+        // Date getter
+        if(dateString != ""){
+            val formato = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+            val fecha = formato.parse(dateString)
+            val calendar = Calendar.getInstance()
+            calendar.set(Calendar.HOUR_OF_DAY, 0)
+            calendar.set(Calendar.MINUTE, 0)
+            calendar.set(Calendar.SECOND, 0)
+            calendar.set(Calendar.MILLISECOND, 0)
+            val hoy = calendar.time
+            Log.i("xddd Fecha", fecha.toString())
+            Log.i("xddd Hoy", hoy.toString())
+            vencida = hoy > fecha
+        }
+
+
         // Color settings
-        val color = basicColors[item.colorId]
+        val color = if(!vencida) basicColors[item.colorId] else grayColor
         val mainColor = Color.parseColor(color.hexHash)
         holder.infoContainer.setBackgroundColor(Color.parseColor(color.hexBackgroundHash))
         holder.checkBoxContainer.setBackgroundColor(mainColor)

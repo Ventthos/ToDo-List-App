@@ -20,7 +20,8 @@
     <string name="byTime">Por fecha de vencimiento</string>
     <string name="ascending">Ascendente</string>
     <string name="descending">Descendente</string>
-    <!--
+
+    <!--<string name=""
     <string name="filtrateImportanceDescending">Ordenar por importancia descendiente</string>
     <string name="filtrateImportanceAscending">Ordenar por importancia ascendente</string>
     <string name="filtrateTimeDescending">Ordenar por fecha de vencimiento descendiente</string>
@@ -61,4 +62,6 @@
     <string name="removeDate">Quitar nivel de importancia</string>
     <string name="markCompleted">Marcar como completada</string>
     <string name="deleteTask">Eliminar tarea</string>
+    <string name="fillingError">Por favor llene todos los campos</string>
+    <string name="taskTitleError">Se necesita poner un título </string>
 </resources>

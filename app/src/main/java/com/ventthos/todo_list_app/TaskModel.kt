@@ -116,7 +116,7 @@ class TaskModel: ViewModel() {
         taskAdapter.updateList(filteredTasks, recyclerView)
     }
 
-    fun ordenateByImportance(descendingOrder: Boolean,recyclerView: RecyclerView){
+    fun orderByImportance(descendingOrder: Boolean,recyclerView: RecyclerView){
 
         if (descendingOrder){
             filteredTasks.sortByDescending { it.importance }
@@ -129,7 +129,7 @@ class TaskModel: ViewModel() {
         taskAdapter.updateList(filteredTasks, recyclerView)
     }
 
-    fun ordenateByDate(descendingOrder: Boolean = true,recyclerView: RecyclerView){
+    fun orderByDate(descendingOrder: Boolean = true,recyclerView: RecyclerView){
         if(descendingOrder){
             filteredTasks.sortByDescending { it.date }
             currentSortOrder = SortOrder.DATE_DESC
@@ -141,10 +141,13 @@ class TaskModel: ViewModel() {
         taskAdapter.updateList(filteredTasks, recyclerView)
     }
 
-    fun setCompletedVisibility(hide: Boolean = true){
-        filteredTasks = tasks.filter { it.listId == currentPage && it.completed == hide }.toMutableList()
-        onlyCompleted = false
-        taskAdapter.notifyDataSetChanged()
+    fun setCompletedVisibility(hide: Boolean = true, recyclerView: RecyclerView){
+        var tasksVisibility = filteredTasks.filter { it.listId == currentPage}.toMutableList()
+        if(hide){
+            tasksVisibility = tasksVisibility.filter { !it.completed }.toMutableList()
+        }
+
+        taskAdapter.updateList(tasksVisibility, recyclerView)
     }
 
     fun changeCompleted(id:Int, completed: Boolean){

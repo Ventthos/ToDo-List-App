@@ -10,6 +10,7 @@ import android.widget.AdapterView
 import android.widget.EditText
 import android.widget.ImageButton
 import android.widget.Spinner
+import android.widget.Toast
 import androidx.fragment.app.DialogFragment
 import java.io.Console
 
@@ -65,6 +66,11 @@ class ListDialogFragment : DialogFragment(), IconPicker.IconPickerListener{
         val title = titleInput.text.toString()
         val color = spinner.selectedItem as? ColorObject
 
+        if(!deleting && (currentIcon == 0 || title == "")){
+            Toast.makeText(this.context, R.string.fillingError, Toast.LENGTH_SHORT).show()
+            return
+        }
+
         if(deleting){
             listener?.onListDeleted(id, title, currentIcon, color?.colorId?: basicColors.first().colorId, editing)
             return
@@ -106,30 +112,47 @@ class ListDialogFragment : DialogFragment(), IconPicker.IconPickerListener{
                     onIconSelected(arguments?.getInt("ICON", -1) ?: -1)
 
                     val colorSelected = arguments?.getInt("COLORID", -1) ?: 0
-                    Log.i("El color pasado es", colorSelected.toString())
                     spinner.setSelection(colorSelected)
 
                     editing = true
                 }
             }
 
-            builder.setView(dialogView)
-                .setPositiveButton(R.string.save){ _,_ ->
-                    sendValues(false)
-                    dialog?.dismiss()
-                }
-                .setNegativeButton(R.string.cancel){ _,_ ->
-                    dialog?.dismiss()
-                }
 
-            if(editing){
-                builder.setNeutralButton(R.string.eliminar){_,_->
-                    sendValues(true)
+            builder.setView(dialogView)
+                .setPositiveButton(R.string.save, null)
+                .setNegativeButton(R.string.cancel) { dialog, _ -> dialog.dismiss() }
+
+            if (editing) {
+                builder.setNeutralButton(R.string.eliminar){_,_ ->sendValues(true)}
+            }
+
+            val dialog = builder.create()
+
+            dialog.setOnShowListener {
+                // Botón Guardar
+                val saveButton = dialog.getButton(AlertDialog.BUTTON_POSITIVE)
+                saveButton.setOnClickListener {
+                    if (validateInput()) {
+                        sendValues(false)
+                        dialog.dismiss()
+                    }
                 }
             }
 
-            builder.create()
+            dialog
+
         } ?: throw IllegalStateException("Activity cannot be null")
+    }
+
+    private fun validateInput(): Boolean {
+        val title = titleInput.text.toString()
+        return if (currentIcon == -1 || title.isBlank()) {
+            Toast.makeText(context, R.string.fillingError, Toast.LENGTH_SHORT).show()
+            false
+        } else {
+            true
+        }
     }
 
     private fun loadColorSpinner(){

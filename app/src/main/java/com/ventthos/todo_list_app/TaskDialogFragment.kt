@@ -10,6 +10,7 @@ import android.widget.ArrayAdapter
 import android.widget.EditText
 import android.widget.Spinner
 import android.widget.TextView
+import android.widget.Toast
 import androidx.fragment.app.DialogFragment
 
 class TaskDialogFragment: DialogFragment(), DateDialogFragment.DatePickerListener  {
@@ -128,12 +129,38 @@ class TaskDialogFragment: DialogFragment(), DateDialogFragment.DatePickerListene
                 windowTitle.setText(R.string.editTask)
 
             builder.setView(dialogView)
-                .setPositiveButton(R.string.save){_,_->
-                    sendValues()
+                .setPositiveButton(R.string.save, null)
+                .setNegativeButton(R.string.cancel){_,_->
+                    dialog?.dismiss()
                 }
 
-            builder.create()
+            val dialog = builder.create()
+
+            // Esto es necesario para poder hacer de que si la validación falla, se envie un error
+            dialog.setOnShowListener {
+                // Botón Guardar
+                val saveButton = dialog.getButton(AlertDialog.BUTTON_POSITIVE)
+                saveButton.setOnClickListener {
+                    if (validateInput()) {
+                        sendValues()
+                        dialog.dismiss()
+                    }
+                }
+            }
+
+            dialog
         } ?: throw IllegalStateException("Activity cannot be null")
+    }
+
+    // Función para saber que la lista tiene un título
+    private fun validateInput(): Boolean {
+        val title = titleInput.text.toString()
+        return if (title.isBlank()) {
+            Toast.makeText(context, R.string.taskTitleError, Toast.LENGTH_SHORT).show()
+            false
+        } else {
+            true
+        }
     }
 
     override fun onSaveInstanceState(outState: Bundle) {

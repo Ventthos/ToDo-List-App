@@ -15,6 +15,8 @@ var basicColors = listOf(
     ColorObject(6, "Rosa", "ea1f63", "fae4ec", whiteHex)
 )
 
+var grayColor = ColorObject(-1, "Gray", "797979", "c5c5c5", whiteHex)
+
 class ColorList {
 
 

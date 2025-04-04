@@ -258,8 +258,12 @@ class MainActivity : AppCompatActivity(), TaskDialogFragment.TaskEditListener, L
             }
         }
 
-        if(goDetault) taskModel.currentSortOrder = SortOrder.DEFAULT
-        runOrder(taskModel.currentSortOrder)
+        if(goDetault){
+            taskModel.currentSortOrder = SortOrder.DEFAULT
+            taskModel.onlyCompleted = true
+        }
+        if (taskModel.currentPage >= 0)
+            runOrder(taskModel.currentSortOrder)
     }
 
     override fun onTaskCheckedChanged(task: Task, isChecked: Boolean) {
@@ -310,17 +314,23 @@ class MainActivity : AppCompatActivity(), TaskDialogFragment.TaskEditListener, L
             runOrder(taskModel.currentSortOrder)
             true
         }
+        R.id.show_completed_menu->{
+            taskModel.onlyCompleted = !taskModel.onlyCompleted
+            taskModel.setCompletedVisibility(taskModel.onlyCompleted, recyclerView)
+            true
+        }
         else -> super.onOptionsItemSelected(item)
     }
 
     fun runOrder(order: SortOrder){
         when(order){
-            SortOrder.IMPORTANCE_DESC->taskModel.ordenateByImportance(true, recyclerView)
-            SortOrder.IMPORTANCE_ASC -> taskModel.ordenateByImportance(false, recyclerView)
-            SortOrder.DATE_DESC -> taskModel.ordenateByDate(true, recyclerView)
-            SortOrder.DATE_ASC ->  taskModel.ordenateByDate(false, recyclerView)
+            SortOrder.IMPORTANCE_DESC->taskModel.orderByImportance(true, recyclerView)
+            SortOrder.IMPORTANCE_ASC -> taskModel.orderByImportance(false, recyclerView)
+            SortOrder.DATE_DESC -> taskModel.orderByDate(true, recyclerView)
+            SortOrder.DATE_ASC ->  taskModel.orderByDate(false, recyclerView)
             SortOrder.DEFAULT -> {}
         }
+        taskModel.setCompletedVisibility(taskModel.onlyCompleted, recyclerView)
     }
 
     override fun onCreateContextMenu(
