@@ -30,6 +30,7 @@ class TaskModel: ViewModel() {
     lateinit var listDao: TaskListDao
     lateinit var userDao: UserDao
 
+
     //Aqui jalariamos los elementos de la base de datos para meterlos a una lista
     private val tasks = mutableListOf<Task>()
 
@@ -40,6 +41,7 @@ class TaskModel: ViewModel() {
     lateinit var taskAdapter: ItemAdapter
 
     var currentPage = -1
+    var itemPosition = -1
 
     fun getTasks(){
         tasks.clear()
@@ -160,6 +162,8 @@ class TaskModel: ViewModel() {
 
     fun changeDateLimit(id: Int, date:String){
         taskDao.updateTaskLimit(id, date)
+        getTasks()
+        taskAdapter.notifyDataSetChanged()
     }
 
     fun getListFromDb(context: Context){

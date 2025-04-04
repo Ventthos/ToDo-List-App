@@ -49,7 +49,6 @@ class MainActivity : AppCompatActivity(), TaskDialogFragment.TaskEditListener, L
     lateinit var pageTitle: TextView
     lateinit var coordinatorLayout: CoordinatorLayout
     private val taskModel: TaskModel by viewModels()
-    private var itemPosition = -1
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -345,14 +344,14 @@ class MainActivity : AppCompatActivity(), TaskDialogFragment.TaskEditListener, L
 
         // Y vamos obteniendo la posición cada que den clic sobre un objeto
         val vh = recyclerView.getChildViewHolder(v!!) as ItemAdapter.ItemViewHolder
-        itemPosition = vh.adapterPosition
+        taskModel.itemPosition = vh.adapterPosition
     }
 
     override fun onContextItemSelected(item: MenuItem): Boolean {
         // Si nos deuvelve algo inválido cancelamos todo
-        if (itemPosition == -1) return super.onContextItemSelected(item)
+        if (taskModel.itemPosition == -1) return super.onContextItemSelected(item)
 
-        val task = taskModel.taskAdapter.itemList[itemPosition] // Obtiene la tarea seleccionada del viewHolder
+        val task = taskModel.taskAdapter.itemList[taskModel.itemPosition] // Obtiene la tarea seleccionada del viewHolder
 
         // Aquí checamos que opción agarraron
         return when (item.itemId) {
@@ -376,6 +375,13 @@ class MainActivity : AppCompatActivity(), TaskDialogFragment.TaskEditListener, L
 
 
     override fun onDateSelected(year: Int, month: Int, day: Int) {
-        Log.i("SiFuncionaElDate", "En efecto funciona y me dieron ${day}")
+        // Parceamos los datos
+        val finalDay = if(day < 10) "0${day}" else day
+        val finalMonth = if(month < 10) "0${month}" else month
+        val finalDate = "${year}-${finalMonth}-${finalDay}"
+        Log.i("Fecha final", finalDate)
+        val task = taskModel.taskAdapter.itemList[taskModel.itemPosition]
+        taskModel.changeDateLimit(task.id, finalDate)
+        runFilters()
     }
 }
