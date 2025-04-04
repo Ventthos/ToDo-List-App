@@ -28,6 +28,9 @@ interface TaskDao {
     @Query("UPDATE task SET colorId = :colorId WHERE listId = :idList")
     fun updateTaskListColorInTasks(idList:Int, colorId:Int)
 
+    @Query("UPDATE task SET date = :date WHERE id = :idTask")
+    fun updateTaskLimit(idTask:Int, date:String)
+
     @Query ("SELECT * FROM task WHERE id = :id")
     fun getTaskWithId(id : Int) : Task
 

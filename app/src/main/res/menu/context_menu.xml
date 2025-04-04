@@ -1,6 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
     <item android:title="@string/removeImportance" android:id="@+id/removeImportanceMenu"/>
+    <item android:title="@string/setTodayLimit" android:id="@+id/setTodayLimitMenu"/>
+    <item android:title="@string/setTomorrowLimit" android:id="@+id/setTomorrowLimitMenu"/>
+    <item android:title="@string/changeDate" android:id="@+id/changeDateMenu"/>
     <item android:title="@string/removeDate" android:id="@+id/removeDateMenu"/>
     <item android:title="@string/markCompleted" android:id="@+id/completeActionMenu"/>
     <item android:title="@string/deleteTask" android:id="@+id/deleteActionMenu"/>

@@ -92,9 +92,8 @@ class TaskDialogFragment: DialogFragment(), DateDialogFragment.DatePickerListene
 
             // binds
             dateSelector.setOnClickListener {
-                val iconPicker = DateDialogFragment()
-                iconPicker.setTargetFragment(this, 0)
-                iconPicker.show(parentFragmentManager, "DatePicker")
+                val datePicker = DateDialogFragment()
+                datePicker.show(childFragmentManager, "DatePicker")
             }
 
             // Spinner config

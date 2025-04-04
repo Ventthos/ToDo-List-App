@@ -17,7 +17,15 @@ class DateDialogFragment : DialogFragment() {
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
-        listener = targetFragment as? DatePickerListener
+        listener = try {
+            if (parentFragment is DatePickerListener) {
+                parentFragment as DatePickerListener
+            } else {
+                context as? DatePickerListener
+            }
+        } catch (e: ClassCastException) {
+            throw ClassCastException("$context must implement DatePickerListener")
+        }
     }
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {

@@ -158,6 +158,10 @@ class TaskModel: ViewModel() {
         taskAdapter.notifyDataSetChanged()
     }
 
+    fun changeDateLimit(id: Int, date:String){
+        taskDao.updateTaskLimit(id, date)
+    }
+
     fun getListFromDb(context: Context){
         lists.clear()
         lists.addAll(listDao.getAllUsersList(currentUserId))

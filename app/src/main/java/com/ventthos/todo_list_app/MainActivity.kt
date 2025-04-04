@@ -6,6 +6,7 @@ import android.view.ContextMenu
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
+import android.widget.DatePicker
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.viewModels
@@ -38,7 +39,7 @@ interface OnTaskClickForEditListener{
 }
 
 
-class MainActivity : AppCompatActivity(), TaskDialogFragment.TaskEditListener, ListDialogFragment.ListEditorListener, OnTaskCheckedChangeListener, OnTaskClickForEditListener {
+class MainActivity : AppCompatActivity(), TaskDialogFragment.TaskEditListener, ListDialogFragment.ListEditorListener, OnTaskCheckedChangeListener, OnTaskClickForEditListener , DateDialogFragment.DatePickerListener {
     lateinit var navigationView: NavigationView
     lateinit var drawerLayout: DrawerLayout
     lateinit var drawerToggle: ActionBarDrawerToggle
@@ -267,7 +268,7 @@ class MainActivity : AppCompatActivity(), TaskDialogFragment.TaskEditListener, L
     }
 
     override fun onTaskCheckedChanged(task: Task, isChecked: Boolean) {
-        taskModel.changeCompleted(task.id.toInt(), isChecked)
+        taskModel.changeCompleted(task.id, isChecked)
         runFilters()
         if(isChecked){
             val snackbar = Snackbar.make(coordinatorLayout, R.string.completedConfirmation, Snackbar.LENGTH_LONG)
@@ -277,7 +278,7 @@ class MainActivity : AppCompatActivity(), TaskDialogFragment.TaskEditListener, L
     }
 
     override fun OnTaskClickForEdit(task: Task) {
-        TaskDialogFragment.setArguments(task.id.toInt(), task.title, task.notes, task.importance, task.date)
+        TaskDialogFragment.setArguments(task.id, task.title, task.notes, task.importance, task.date)
             .show(supportFragmentManager, "TaskEdit")
 
     }
@@ -333,6 +334,7 @@ class MainActivity : AppCompatActivity(), TaskDialogFragment.TaskEditListener, L
         taskModel.setCompletedVisibility(taskModel.onlyCompleted, recyclerView)
     }
 
+    // Esto es del context menu
     override fun onCreateContextMenu(
         menu: ContextMenu?,
         v: View?,
@@ -340,26 +342,42 @@ class MainActivity : AppCompatActivity(), TaskDialogFragment.TaskEditListener, L
     ) {
         super.onCreateContextMenu(menu, v, menuInfo)
 
+        // Se infla el menu
         menuInflater.inflate(R.menu.context_menu, menu)
 
+        // Y vamos obteniendo la posición cada que den clic sobre un objeto
         val vh = recyclerView.getChildViewHolder(v!!) as ItemAdapter.ItemViewHolder
         itemPosition = vh.adapterPosition
     }
 
     override fun onContextItemSelected(item: MenuItem): Boolean {
+        // Si nos deuvelve algo inválido cancelamos todo
         if (itemPosition == -1) return super.onContextItemSelected(item)
 
-        val task = taskModel.taskAdapter.itemList[itemPosition] // Obtiene la tarea seleccionada
+        val task = taskModel.taskAdapter.itemList[itemPosition] // Obtiene la tarea seleccionada del viewHolder
 
+        // Aquí checamos que opción agarraron
         return when (item.itemId) {
+            //Si eligieron delete, pues llamamos a la función
             R.id.deleteActionMenu ->{
                 taskModel.deleteTask(task.id, task.title, task.notes, task.importance, task.date)
                 runFilters()
+                true
+            }
+            //Aqui para cambiar fecha de vencimiento
+            R.id.changeDateMenu ->{
+                val dateDialog = DateDialogFragment()
+                dateDialog.show(supportFragmentManager, "datePicker")
                 true
             }
             else->{
                 false
             }
         }
+    }
+
+
+    override fun onDateSelected(year: Int, month: Int, day: Int) {
+        Log.i("SiFuncionaElDate", "En efecto funciona y me dieron ${day}")
     }
 }

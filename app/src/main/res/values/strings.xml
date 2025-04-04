@@ -59,7 +59,10 @@
 
     <string name="editTask">Editar tarea</string>
     <string name="removeImportance">Quitar nivel de importancia</string>
-    <string name="removeDate">Quitar nivel de importancia</string>
+    <string name="setTodayLimit">Cambiar fecha a vence hoy</string>
+    <string name="setTomorrowLimit">Cambiar fecha a vence mañana</string>
+    <string name="changeDate">Elegir fecha de vencimiento</string>
+    <string name="removeDate">Quitar fecha de vencimiento</string>
     <string name="markCompleted">Marcar como completada</string>
     <string name="deleteTask">Eliminar tarea</string>
     <string name="fillingError">Por favor llene todos los campos</string>
