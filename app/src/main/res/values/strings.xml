@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">ToDo_List_app</string>
+    <string name="app_name">To Do App</string>
     <string name="abierto">Abierto</string>
     <string name="cerrado">Cerrado</string>
 
