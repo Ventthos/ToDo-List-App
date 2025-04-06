@@ -11,5 +11,6 @@ data class User(
     var lastName: String,
     var email: String?,
     val password: String,
-    var avatar: Int
+    var avatar: Int,
+    var lastPage: Int = -1
 )
