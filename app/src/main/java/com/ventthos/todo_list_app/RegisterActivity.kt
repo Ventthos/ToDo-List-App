@@ -100,6 +100,12 @@ class RegisterActivity : AppCompatActivity() {
                 .fallbackToDestructiveMigration()
                 .build()
 
+            val existingUser = db.UserDao().getUserByEmail(email)
+            if (existingUser != null) {
+                Toast.makeText(this, "El correo ya está registrado", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+
             val newUser = User(
                 name = name,
                 lastName = lastName,
@@ -109,6 +115,7 @@ class RegisterActivity : AppCompatActivity() {
             )
 
             db.UserDao().insertUser(newUser)
+
             val createdUser = db.UserDao().getUserByEmail(email)
             Toast.makeText(this, "Usuario registrado con éxito", Toast.LENGTH_SHORT).show()
             val intent = Intent(this, LoginActivity::class.java)

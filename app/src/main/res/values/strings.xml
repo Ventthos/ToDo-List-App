@@ -67,6 +67,9 @@
     <string name="lastname_hint">Last Name</string>
     <string name="logout">Cerrar sesión</string>
     <string name="choose_avatar">Elegir avatar</string>
+    <string name="login_subtitle">Inicia sesión</string>
+    <string name="google_register">Registrate con Google</string>
+    <string name="indications">Ó rellena el formulario</string>
 
     <string name="fill_all_fields">Por favor, completa todos los campos</string>
     <string name="passwords_do_not_match">Las contraseñas no coinciden</string>

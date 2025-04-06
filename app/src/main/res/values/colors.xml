@@ -6,6 +6,8 @@
     <color name="mainColorBackgroud">#C8E2FA</color>
     <color name="mercury">#e2e2e2</color>
     <color name="silver">#cbcbcb</color>
+    <color name="buttonBlue">#00264D</color>
+    <color name="buttonBlue2">#1E88E5</color>
 
     <color name="colorPrimary">#8E2DE2</color>
     <color name="colorSecondary">#4A00E0</color>
