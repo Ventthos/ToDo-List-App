@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">ToDo_List_app</string>
+    <string name="app_name">To Do App</string>
     <string name="abierto">Abierto</string>
     <string name="cerrado">Cerrado</string>
 
@@ -83,5 +83,14 @@
     <string name="register_button">REGISTRAR</string>
     <string name="already_have_account">Already have an account? Login</string>
     <string name="lastname_hint">Last Name</string>
+
+    <string name="logout">Cerrar sesión</string>
+    <string name="choose_avatar">Elegir avatar</string>
+    <string name="login_subtitle">Inicia sesión</string>
+    <string name="google_register">Registrate con Google</string>
+    <string name="indications">Ó rellena el formulario</string>
+
+    <string name="fill_all_fields">Por favor, completa todos los campos</string>
+    <string name="passwords_do_not_match">Las contraseñas no coinciden</string>
 
 </resources>

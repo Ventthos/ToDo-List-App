@@ -5,15 +5,18 @@ import androidx.room.RoomDatabase
 import com.ventthos.todo_list_app.db.Daos.TaskDao
 import com.ventthos.todo_list_app.db.Daos.TaskListDao
 import com.ventthos.todo_list_app.db.Daos.UserDao
+import com.ventthos.todo_list_app.db.Daos.SessionDao
 import com.ventthos.todo_list_app.db.dataclasses.Task
 import com.ventthos.todo_list_app.db.dataclasses.TaskList
 import com.ventthos.todo_list_app.db.dataclasses.User
+import com.ventthos.todo_list_app.db.dataclasses.Session
 
-@Database(entities = [User::class, Task::class, TaskList::class], version = 3)
+@Database(entities = [User::class, Task::class, TaskList::class, Session::class], version = 6)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun UserDao() : UserDao
     abstract fun TaskListDao() : TaskListDao
     abstract fun TaskDao() : TaskDao
+    abstract fun sessionDao(): SessionDao
 
     companion object {
         @Volatile

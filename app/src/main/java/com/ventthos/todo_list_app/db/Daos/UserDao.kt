@@ -9,18 +9,18 @@ import com.ventthos.todo_list_app.db.dataclasses.User
 
 @Dao
 interface UserDao {
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    @Insert(onConflict = OnConflictStrategy.ABORT)
     fun insertUser(user: User)
 
-    @Query("SELECT * FROM user")
-    fun getAllUsers() : List<User>
+    @Query("SELECT * FROM users")
+    fun getAllUsers(): List<User>
 
-    @Query("SELECT * FROM user WHERE id = :userId")
-    fun getUserById(userId: String): User?
+    @Query("SELECT * FROM users WHERE id = :userId")
+    fun getUserById(userId: Int): User?
 
     @Delete
     fun deleteUser(user: User)
 
-    @Query("SELECT * FROM user WHERE email = :email LIMIT 1")
+    @Query("SELECT * FROM users WHERE email = :email LIMIT 1")
     fun getUserByEmail(email: String): User?
 }

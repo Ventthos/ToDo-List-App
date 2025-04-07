@@ -28,6 +28,9 @@ import com.google.android.material.snackbar.Snackbar
 import com.ventthos.todo_list_app.db.AppDatabase.AppDatabase
 import com.ventthos.todo_list_app.db.dataclasses.Task
 import com.ventthos.todo_list_app.db.dataclasses.TaskList
+import android.widget.Button
+import android.content.Intent
+import android.widget.ImageView
 
 
 interface OnTaskCheckedChangeListener {
@@ -82,7 +85,28 @@ class MainActivity : AppCompatActivity(), TaskDialogFragment.TaskEditListener, L
         val insertTaskId = tasks.size + 1
         taskDao.addTask(Task(insertTaskId,"Hacer la db", "No se como aa", 3,"2025-06-25",false, insertTaskListId,1))
         */
-        taskModel.currentUserId = 1
+        val sessionDao = db.sessionDao()
+
+        val userId: Int = if (intent.hasExtra("userId")) {
+            intent.getIntExtra("userId", -1)
+        } else {
+            val session = sessionDao.getActiveSession()
+            if (session != null) {
+                session.userId
+            } else {
+                -1
+            }
+        }
+
+        if (userId != -1) {
+            taskModel.currentUserId = userId
+        } else {
+            Toast.makeText(this, "No hay sesión activa. Por favor, inicia sesión.", Toast.LENGTH_SHORT).show()
+            val intent = Intent(this, LoginActivity::class.java)
+            startActivity(intent)
+            finish()
+            return
+        }
 
         //termina logica db
         //Logica del reciclerView
@@ -106,6 +130,22 @@ class MainActivity : AppCompatActivity(), TaskDialogFragment.TaskEditListener, L
 
         setSupportActionBar(findViewById(R.id.toolbar))
 
+        val headerView = navigationView.getHeaderView(0)
+
+        // Mostramos nombre, correo y avatar del usuario
+        val nameTextView = headerView.findViewById<TextView>(R.id.nav_header_name)
+        val emailTextView = headerView.findViewById<TextView>(R.id.nav_header_email)
+        val avatarImageView = headerView.findViewById<ImageView>(R.id.avatarImageView)
+
+        val currentUser = taskModel.userDao.getUserById(taskModel.currentUserId)
+        if (currentUser != null) {
+            nameTextView.text = "${currentUser.name} ${currentUser.lastName}"
+            emailTextView.text = currentUser.email ?: ""
+
+            val avatarResId = if (currentUser.avatar != 0) currentUser.avatar else R.drawable.mark
+            avatarImageView.setImageResource(avatarResId)
+        }
+
         // Drawer configuration
         drawerToggle = ActionBarDrawerToggle(this, drawerLayout, toolbar, R.string.openDrawerDesc, R.string.closeDrawerDesc)
         drawerLayout.addDrawerListener(drawerToggle)
@@ -128,6 +168,19 @@ class MainActivity : AppCompatActivity(), TaskDialogFragment.TaskEditListener, L
                 }
                 R.id.nav_completed->{
                     taskModel.currentPage = -4
+                }
+                R.id.nav_logout -> {
+                    Thread {
+                        val db = AppDatabase.getDatabase(this)
+                        db.sessionDao().clearSession()
+
+                        runOnUiThread {
+                            val intent = Intent(this, LoginActivity::class.java)
+                            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                            startActivity(intent)
+                        }
+                    }.start()
+                    true
                 }
                 else->{
                     taskModel.currentPage = menuItem.itemId
