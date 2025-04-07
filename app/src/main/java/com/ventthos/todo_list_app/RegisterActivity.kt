@@ -90,6 +90,10 @@ class RegisterActivity : AppCompatActivity() {
                 Toast.makeText(this, getString(R.string.fill_all_fields), Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
+            if (password.length < 6) {
+                Toast.makeText(this, "La contraseña debe tener al menos 6 caracteres", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
             if (password != confirmPassword) {
                 Toast.makeText(this, getString(R.string.passwords_do_not_match), Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
@@ -167,6 +171,15 @@ class RegisterActivity : AppCompatActivity() {
         }
     }
 
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        outState.putInt("selectedAvatarResId", selectedAvatarResId)
+    }
+    override fun onRestoreInstanceState(savedInstanceState: Bundle) {
+        super.onRestoreInstanceState(savedInstanceState)
+        selectedAvatarResId = savedInstanceState.getInt("selectedAvatarResId", R.drawable.mark)
+        avatarImage.setImageResource(selectedAvatarResId)
+    }
     private fun showAvatarDialog() {
         avatarDialog = Dialog(this)
         avatarDialog.setContentView(R.layout.dialog_avatar_picker)
