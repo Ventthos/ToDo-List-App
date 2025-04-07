@@ -98,6 +98,9 @@ class MainActivity : AppCompatActivity(), TaskDialogFragment.TaskEditListener, L
             taskModel.currentUserId = userId
             val currentUser = taskModel.userDao.getUserById(userId)
             taskModel.currentPage = currentUser?.lastPage ?: -1 // Se restaura el lastPage
+            if (savedInstanceState != null) {
+                taskModel.currentPage = savedInstanceState.getInt("currentPage", taskModel.currentPage)
+            }
         } else {
             Toast.makeText(this, "No hay sesión activa. Por favor, inicia sesión.", Toast.LENGTH_SHORT).show()
             val intent = Intent(this, LoginActivity::class.java)
@@ -212,6 +215,20 @@ class MainActivity : AppCompatActivity(), TaskDialogFragment.TaskEditListener, L
         runFilters()
         redrawLists()
     }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        outState.putInt("currentPage", taskModel.currentPage)
+    }
+
+    override fun onPause() {
+        super.onPause()
+        val currentUser = taskModel.userDao.getUserById(taskModel.currentUserId)
+        currentUser?.let {
+            taskModel.userDao.updateLastPage(it.id, taskModel.currentPage)
+        }
+    }
+
 
     fun changePageStyles(){
         when (taskModel.currentPage) {
