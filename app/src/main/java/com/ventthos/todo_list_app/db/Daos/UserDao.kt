@@ -10,7 +10,7 @@ import com.ventthos.todo_list_app.db.dataclasses.User
 @Dao
 interface UserDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    fun insertUser(user: User)
+    fun insertUser(user: User): Long
 
     @Query("SELECT * FROM user")
     fun getAllUsers() : List<User>
