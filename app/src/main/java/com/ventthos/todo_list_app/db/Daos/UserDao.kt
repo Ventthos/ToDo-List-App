@@ -25,7 +25,7 @@ interface UserDao {
     @Query("SELECT * FROM users WHERE email = :email LIMIT 1")
     fun getUserByEmail(email: String): User?
 
-    @Query("UPDATE user SET lastPage = :lastPage WHERE id = :userId")
+    @Query("UPDATE users SET lastPage = :lastPage WHERE id = :userId")
     fun updateLastPage(userId: Int, lastPage: Int)
 
 }
