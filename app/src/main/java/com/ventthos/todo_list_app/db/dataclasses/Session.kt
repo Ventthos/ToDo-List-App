@@ -6,5 +6,6 @@ import androidx.room.PrimaryKey
 @Entity
 data class Session(
     @PrimaryKey(autoGenerate = true) val id: Int = 0,
-    val userId: Int
+    val userId: Int,
+    val currentPage: Int = -1
 )

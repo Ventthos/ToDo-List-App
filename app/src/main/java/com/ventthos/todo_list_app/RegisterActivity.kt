@@ -2,18 +2,21 @@ package com.ventthos.todo_list_app
 
 import android.app.Dialog
 import android.content.Intent
+import android.graphics.Color
 import android.os.Bundle
 import android.util.Log
 import android.view.View
 import android.view.ViewGroup
 import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
 import androidx.room.Room
 import com.ventthos.todo_list_app.db.AppDatabase.AppDatabase
 import com.ventthos.todo_list_app.db.dataclasses.User
 import com.google.android.gms.auth.api.signin.*
 import com.google.android.gms.common.SignInButton
 import com.google.android.gms.common.api.ApiException
+import com.ventthos.todo_list_app.db.dataclasses.TaskList
 
 class RegisterActivity : AppCompatActivity() {
 
@@ -100,7 +103,8 @@ class RegisterActivity : AppCompatActivity() {
                 .fallbackToDestructiveMigration()
                 .build()
 
-            val existingUser = db.UserDao().getUserByEmail(email)
+            val userDao = db.UserDao()
+            val existingUser = userDao.getUserByEmail(email)
             if (existingUser != null) {
                 Toast.makeText(this, "El correo ya está registrado", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
@@ -114,7 +118,23 @@ class RegisterActivity : AppCompatActivity() {
                 avatar = selectedAvatarResId
             )
 
-            db.UserDao().insertUser(newUser)
+            val userId = userDao.insertUser(newUser).toInt()
+
+            val taskListDao = db.TaskListDao()
+   
+            val red = basicColors[0]
+            val idColor = red.colorId
+
+            // Lista "pendientes" default al crear el usuario
+            val defaultList = TaskList(
+                name = "Pendientes",
+                color = idColor,
+                iconName = "time",
+                iconId = R.drawable.time,
+                userId = userId
+            )
+
+            taskListDao.addList(defaultList)
 
             val createdUser = db.UserDao().getUserByEmail(email)
             Toast.makeText(this, "Usuario registrado con éxito", Toast.LENGTH_SHORT).show()

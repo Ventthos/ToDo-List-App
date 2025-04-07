@@ -87,19 +87,17 @@ class MainActivity : AppCompatActivity(), TaskDialogFragment.TaskEditListener, L
         */
         val sessionDao = db.sessionDao()
 
+        val session = sessionDao.getActiveSession()
         val userId: Int = if (intent.hasExtra("userId")) {
             intent.getIntExtra("userId", -1)
         } else {
-            val session = sessionDao.getActiveSession()
-            if (session != null) {
-                session.userId
-            } else {
-                -1
-            }
+            session?.userId ?: -1
         }
 
         if (userId != -1) {
             taskModel.currentUserId = userId
+            val currentUser = taskModel.userDao.getUserById(userId)
+            taskModel.currentPage = currentUser?.lastPage ?: -1 // Se restaura el lastPage
         } else {
             Toast.makeText(this, "No hay sesión activa. Por favor, inicia sesión.", Toast.LENGTH_SHORT).show()
             val intent = Intent(this, LoginActivity::class.java)
@@ -107,6 +105,7 @@ class MainActivity : AppCompatActivity(), TaskDialogFragment.TaskEditListener, L
             finish()
             return
         }
+
 
         //termina logica db
         //Logica del reciclerView
@@ -172,6 +171,13 @@ class MainActivity : AppCompatActivity(), TaskDialogFragment.TaskEditListener, L
                 R.id.nav_logout -> {
                     Thread {
                         val db = AppDatabase.getDatabase(this)
+
+                        // Actualiza el lastPage antes de limpiar la sesión
+                        val currentUser = taskModel.userDao.getUserById(taskModel.currentUserId)
+                        currentUser?.let {
+                            taskModel.userDao.updateLastPage(currentUser.id, taskModel.currentPage)
+                        }
+
                         db.sessionDao().clearSession()
 
                         runOnUiThread {
@@ -182,10 +188,14 @@ class MainActivity : AppCompatActivity(), TaskDialogFragment.TaskEditListener, L
                     }.start()
                     true
                 }
+
                 else->{
                     taskModel.currentPage = menuItem.itemId
                 }
             }
+
+            sessionDao.updateCurrentPageForUser(taskModel.currentUserId, taskModel.currentPage)
+
             changePageStyles()
             runFilters(true)
             drawerLayout.closeDrawer(GravityCompat.START)
