@@ -31,6 +31,7 @@ import com.ventthos.todo_list_app.db.dataclasses.TaskList
 import android.widget.Button
 import android.content.Intent
 import android.widget.ImageView
+import java.util.Locale
 
 
 interface OnTaskCheckedChangeListener {
@@ -98,6 +99,9 @@ class MainActivity : AppCompatActivity(), TaskDialogFragment.TaskEditListener, L
             taskModel.currentUserId = userId
             val currentUser = taskModel.userDao.getUserById(userId)
             taskModel.currentPage = currentUser?.lastPage ?: -1 // Se restaura el lastPage
+            if (savedInstanceState != null) {
+                taskModel.currentPage = savedInstanceState.getInt("currentPage", taskModel.currentPage)
+            }
         } else {
             Toast.makeText(this, "No hay sesión activa. Por favor, inicia sesión.", Toast.LENGTH_SHORT).show()
             val intent = Intent(this, LoginActivity::class.java)
@@ -212,6 +216,20 @@ class MainActivity : AppCompatActivity(), TaskDialogFragment.TaskEditListener, L
         runFilters()
         redrawLists()
     }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        outState.putInt("currentPage", taskModel.currentPage)
+    }
+
+    override fun onPause() {
+        super.onPause()
+        val currentUser = taskModel.userDao.getUserById(taskModel.currentUserId)
+        currentUser?.let {
+            taskModel.userDao.updateLastPage(it.id, taskModel.currentPage)
+        }
+    }
+
 
     fun changePageStyles(){
         when (taskModel.currentPage) {
@@ -428,6 +446,38 @@ class MainActivity : AppCompatActivity(), TaskDialogFragment.TaskEditListener, L
             R.id.changeDateMenu ->{
                 val dateDialog = DateDialogFragment()
                 dateDialog.show(supportFragmentManager, "datePicker")
+                true
+            }
+            R.id.removeImportanceMenu ->{ //Si eligieron eliminar importancia, llamamos a la función
+                taskModel.editTask(task.id, task.title, task.notes, 0, task.date)
+                runFilters()
+                true
+            }
+            R.id.setTodayLimitMenu->{ // Settea la fecha de hoy
+                val formatter = java.text.SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+                val today = formatter.format(System.currentTimeMillis())
+                taskModel.changeDateLimit(task.id, today)
+                runFilters()
+                true
+            }
+            R.id.setTomorrowLimitMenu->{ // Settea la fecha de mañana
+                val calendar = java.util.Calendar.getInstance()
+                calendar.add(java.util.Calendar.DAY_OF_YEAR, 1) // Suma un día
+                val formatter = java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.getDefault()) // Formato de fecha
+                val tomorrow = formatter.format(calendar.time)
+
+                taskModel.changeDateLimit(task.id, tomorrow)
+                runFilters()
+                true
+            }
+            R.id.removeDateMenu->{ // Remueve la fecha
+                taskModel.editTask(task.id, task.title, task.notes, task.importance, null)
+                runFilters()
+                true
+            }
+            R.id.completeActionMenu->{ // Completa la tarea
+                taskModel.changeCompleted(task.id, true)
+                runFilters()
                 true
             }
             else->{
