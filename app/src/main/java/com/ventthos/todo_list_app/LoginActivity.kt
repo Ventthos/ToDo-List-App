@@ -6,6 +6,7 @@ import android.util.Log
 import android.util.Patterns
 import android.widget.Button
 import android.widget.EditText
+import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.ventthos.todo_list_app.db.AppDatabase.AppDatabase
@@ -20,6 +21,7 @@ class LoginActivity : AppCompatActivity() {
     private lateinit var passwordInput: EditText
     private lateinit var loginButton: Button
     private lateinit var registerButton: Button
+    private lateinit var forgotPasswordText: TextView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -29,6 +31,12 @@ class LoginActivity : AppCompatActivity() {
         passwordInput = findViewById(R.id.get_pass_login)
         loginButton = findViewById(R.id.Login_button)
         registerButton = findViewById(R.id.signup_button)
+        forgotPasswordText = findViewById(R.id.forgotPasswordText)
+
+        forgotPasswordText.setOnClickListener {
+            val intent = Intent(this, ForgotPasswordActivity::class.java)
+            startActivity(intent)
+        }
 
         val db = AppDatabase.getDatabase(this)
         val userDao = db.UserDao()

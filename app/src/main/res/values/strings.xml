@@ -74,7 +74,7 @@
     <string name="email_hint">Email</string>
     <string name="password_hint">Password</string>
     <string name="login_button">LOGIN</string>
-    <string name="forgot_password">¿Olvidaste tu contraseña</string>
+    <string name="forgot_password">¿Olvidaste tu contraseña?</string>
     <string name="register_now">¿Nuevo usuario? Registrate</string>
 
     <string name="register_title">Create tu cuenta</string>
@@ -92,5 +92,6 @@
 
     <string name="fill_all_fields">Por favor, completa todos los campos</string>
     <string name="passwords_do_not_match">Las contraseñas no coinciden</string>
+    <string name="change_password">Cambiar contraseña</string>
 
 </resources>

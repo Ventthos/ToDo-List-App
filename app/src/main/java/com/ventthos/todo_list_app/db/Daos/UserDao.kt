@@ -5,6 +5,7 @@ import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import androidx.room.Update
 import com.ventthos.todo_list_app.db.dataclasses.User
 
 @Dao
@@ -27,5 +28,8 @@ interface UserDao {
 
     @Query("UPDATE users SET lastPage = :lastPage WHERE id = :userId")
     fun updateLastPage(userId: Int, lastPage: Int)
+
+    @Update
+    fun updateUser(user: User)
 
 }
