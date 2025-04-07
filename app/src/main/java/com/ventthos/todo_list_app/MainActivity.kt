@@ -378,6 +378,11 @@ class MainActivity : AppCompatActivity(), TaskDialogFragment.TaskEditListener, L
 
 
     override fun onDateSelected(year: Int, month: Int, day: Int) {
-        Log.i("SiFuncionaElDate", "En efecto funciona y me dieron ${day}")
+        val finalDay = if(day < 10) "0${day}" else day
+        val finalMonth = if(month < 10) "0${month}" else month
+        val finalDate = "${year}-${finalMonth}-${finalDay}"
+        
+        val task = taskModel.taskAdapter.itemList[itemPosition]
+        taskModel.changeDateLimit(itemPosition)
     }
 }
