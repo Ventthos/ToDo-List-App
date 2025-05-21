@@ -42,7 +42,9 @@ class ListDialogFragment : DialogFragment(), IconPicker.IconPickerListener{
             id: Int = -1,
             title: String = "",
             currentIcon: Int,
-            colorId: Int
+            colorId: Int,
+            sharedList: Boolean = false,
+            sharedUsers: List<UserFromSharedList>? = null
         ): ListDialogFragment {
             val fragment = ListDialogFragment()
             val args = Bundle()
@@ -52,6 +54,8 @@ class ListDialogFragment : DialogFragment(), IconPicker.IconPickerListener{
             args.putInt("ICON", currentIcon)
             args.putInt("COLORID", colorId)
             args.putBoolean("EDITING", true)
+            args.putBoolean("SHAREDLIST", sharedList)
+            args.putSerializable("SHAREDUSERS", ArrayList(sharedUsers))
 
             fragment.arguments = args
             return fragment
@@ -70,6 +74,7 @@ class ListDialogFragment : DialogFragment(), IconPicker.IconPickerListener{
     interface ListEditorListener {
         fun onListEdited(id: Int, title: String, icon: Int, colorId: Int, editing: Boolean)
         fun onListDeleted(id: Int, title: String, icon: Int, colorId: Int, editing: Boolean)
+        fun onSharedListEdited(id: String, title: String, icon: Int, colorId: Int, editing: Boolean)
     }
 
     private var listener: ListEditorListener? = null
@@ -88,12 +93,17 @@ class ListDialogFragment : DialogFragment(), IconPicker.IconPickerListener{
             return
         }
 
-        if(deleting){
+        if(deleting && !sharedList){
             listener?.onListDeleted(id, title, currentIcon, color?.colorId?: basicColors.first().colorId, editing)
             return
         }
+        else if(!sharedList){
+            listener?.onListEdited(id, title, currentIcon, color?.colorId?: basicColors.first().colorId, editing)
+        }
+        else if(deleting && sharedList){
 
-        listener?.onListEdited(id, title, currentIcon, color?.colorId?: basicColors.first().colorId, editing)
+        }
+        listener?.onSharedListEdited(remoteId, title, currentIcon, color?.colorId?: basicColors.first().colorId, editing)
     }
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {

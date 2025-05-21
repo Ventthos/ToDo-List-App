@@ -32,6 +32,7 @@ import android.widget.Button
 import android.content.Intent
 import android.widget.ImageView
 import com.google.firebase.Firebase
+import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.database
 import java.util.Locale
 
@@ -55,6 +56,8 @@ class MainActivity : AppCompatActivity(), TaskDialogFragment.TaskEditListener, L
     lateinit var pageTitle: TextView
     lateinit var coordinatorLayout: CoordinatorLayout
     private val taskModel: TaskModel by viewModels()
+    lateinit var database: FirebaseDatabase
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -116,7 +119,7 @@ class MainActivity : AppCompatActivity(), TaskDialogFragment.TaskEditListener, L
         //termina logica db
 
         // Declaración de variables de Firebase
-        val database = Firebase.database
+        database = Firebase.database
 
 
         //Logica del reciclerView
@@ -319,6 +322,19 @@ class MainActivity : AppCompatActivity(), TaskDialogFragment.TaskEditListener, L
         redrawLists()
         taskModel.currentPage = -1
         runFilters()
+    }
+
+    override fun onSharedListEdited(
+        id: String,
+        title: String,
+        icon: Int,
+        colorId: Int,
+        editing: Boolean
+    ) {
+        if(!editing){
+            val lists = database.getReference("lists")
+            lists.push().setValue(TaskList(-1, title, colorId, "", icon, taskModel.currentUserId))
+        }
     }
 
     fun redrawLists(){
