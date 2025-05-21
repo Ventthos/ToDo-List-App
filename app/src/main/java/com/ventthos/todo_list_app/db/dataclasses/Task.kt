@@ -2,6 +2,7 @@ package com.ventthos.todo_list_app.db.dataclasses
 
 import androidx.room.Entity
 import androidx.room.ForeignKey
+import androidx.room.Ignore
 import androidx.room.Index
 import androidx.room.PrimaryKey
 
@@ -21,8 +22,11 @@ data class Task(
     var title: String,
     var notes: String = "",
     var importance: Int,
-    var date: String?,
+    var date: String? = null,
     var completed: Boolean = false,
     val listId: Int = 0,
     var colorId: Int = 0
-)
+) {
+    @Ignore var remoteId: String? = null  // Firebase
+    @Ignore var userIdCreated: String? = null
+}

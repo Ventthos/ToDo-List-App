@@ -94,4 +94,8 @@
     <string name="passwords_do_not_match">Las contraseñas no coinciden</string>
     <string name="change_password">Cambiar contraseña</string>
 
+    <string name="sharedLists">Listas compartidas</string>
+    <string name="addSharedLists">Agregar listas compartidas</string>
+    <string name="usersInThisList">Usuarios en esta lista</string>
+    <string name="add">Agregar</string>
 </resources>

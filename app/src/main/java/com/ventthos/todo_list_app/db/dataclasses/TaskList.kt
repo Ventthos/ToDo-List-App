@@ -2,6 +2,7 @@ package com.ventthos.todo_list_app.db.dataclasses
 
 import androidx.room.Entity
 import androidx.room.ForeignKey
+import androidx.room.Ignore
 import androidx.room.Index
 import androidx.room.PrimaryKey
 
@@ -21,4 +22,13 @@ data class TaskList(
     var color: Int,
     var iconName :String,
     var iconId: Int,
-    var userId :Int = -1)
+    var userId :Int = -1,
+)
+{
+    // Firebase cosas
+    @Ignore var remoteId: String? = null
+    @Ignore var ownerId: Int? = null
+    @Ignore var sharedUsers: MutableList<UserFromSharedList>? = null
+}
+
+

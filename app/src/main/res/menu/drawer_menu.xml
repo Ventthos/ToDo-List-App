@@ -24,6 +24,16 @@
 
     <item android:title="@string/addList" android:icon="@drawable/add_list" android:id="@+id/navAddList"/>
 
+    <group>
+        <item android:id="@+id/sharedListsMenuDisplay" android:title="@string/sharedLists">
+            <menu>
+
+            </menu>
+        </item>
+    </group>
+
+    <item android:title="@string/addSharedLists" android:icon="@drawable/add_list" android:id="@+id/navAddSharedList"/>
+
     <item
         android:id="@+id/divider"
         android:title=""

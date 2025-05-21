@@ -31,6 +31,8 @@ import com.ventthos.todo_list_app.db.dataclasses.TaskList
 import android.widget.Button
 import android.content.Intent
 import android.widget.ImageView
+import com.google.firebase.Firebase
+import com.google.firebase.database.database
 import java.util.Locale
 
 
@@ -112,6 +114,11 @@ class MainActivity : AppCompatActivity(), TaskDialogFragment.TaskEditListener, L
 
 
         //termina logica db
+
+        // Declaración de variables de Firebase
+        val database = Firebase.database
+
+
         //Logica del reciclerView
 
         recyclerView = findViewById(R.id.recyclerView)
@@ -157,8 +164,13 @@ class MainActivity : AppCompatActivity(), TaskDialogFragment.TaskEditListener, L
         // Listeners
         navigationView.setNavigationItemSelectedListener { menuItem ->
             when (menuItem.itemId) {
+                // Click para agregar listas normales
                 R.id.navAddList->{
                     ListDialogFragment().show(supportFragmentManager, "List")
+                }
+                // Click para agregar listas de la nube
+                R.id.navAddSharedList->{
+                    ListDialogFragment.createSharedList().show(supportFragmentManager, "List")
                 }
                 R.id.nav_all->{
                     taskModel.currentPage = -1

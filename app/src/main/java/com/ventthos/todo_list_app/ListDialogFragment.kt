@@ -9,15 +9,19 @@ import android.view.View
 import android.widget.AdapterView
 import android.widget.EditText
 import android.widget.ImageButton
+import android.widget.LinearLayout
 import android.widget.Spinner
 import android.widget.Toast
 import androidx.fragment.app.DialogFragment
+import androidx.transition.Visibility
+import com.ventthos.todo_list_app.db.dataclasses.UserFromSharedList
 import java.io.Console
 
 class ListDialogFragment : DialogFragment(), IconPicker.IconPickerListener{
     lateinit var titleInput: EditText
     lateinit var iconChangerButton: ImageButton
     lateinit var spinner: Spinner
+    lateinit var usersLayout: LinearLayout
 
     private var id = -1
     private var editing = false
@@ -27,6 +31,11 @@ class ListDialogFragment : DialogFragment(), IconPicker.IconPickerListener{
     private val TITLETAG = "TitleSelected"
     private val ICONTAG = "IconSelected"
     private val EDITINGTAG = "TaskEditState"
+
+    // Para poder hacer cosas de firebase
+    private var sharedList = false
+    private val remoteId = ""
+    private val sharedUsers: MutableList<UserFromSharedList> = mutableListOf()
 
     companion object {
         fun setArguments(
@@ -42,8 +51,16 @@ class ListDialogFragment : DialogFragment(), IconPicker.IconPickerListener{
             args.putString("TITLE", title)
             args.putInt("ICON", currentIcon)
             args.putInt("COLORID", colorId)
+            args.putBoolean("EDITING", true)
 
+            fragment.arguments = args
+            return fragment
+        }
+        fun createSharedList(): ListDialogFragment{
+            val fragment = ListDialogFragment()
+            val args = Bundle()
 
+            args.putBoolean("SHARED_LIST", true)
             fragment.arguments = args
             return fragment
         }
@@ -88,6 +105,7 @@ class ListDialogFragment : DialogFragment(), IconPicker.IconPickerListener{
             titleInput = dialogView.findViewById(R.id.titleInput)
             spinner = dialogView.findViewById(R.id.colorSpinner)
             iconChangerButton = dialogView.findViewById(R.id.iconChangerButton)
+            usersLayout = dialogView.findViewById(R.id.usersContainer)
 
             // Bindings
             iconChangerButton.setOnClickListener {
@@ -106,26 +124,41 @@ class ListDialogFragment : DialogFragment(), IconPicker.IconPickerListener{
             }
             else {
                 // Cargar valores iniciales desde argumentos
+                // Se verifica si, con los argumentos, se está tratando de editar
                 if (arguments != null) {
-                    id = arguments?.getInt("ID", -1)?:-1
-                    titleInput.setText(arguments?.getString("TITLE", "") ?: "")
-                    onIconSelected(arguments?.getInt("ICON", -1) ?: -1)
+                    // Si en el argumento nos dicen que no están editando
+                    if(arguments?.getBoolean("EDITING", false) == true){
+                        id = arguments?.getInt("ID", -1)?:-1
+                        titleInput.setText(arguments?.getString("TITLE", "") ?: "")
+                        onIconSelected(arguments?.getInt("ICON", -1) ?: -1)
 
-                    val colorSelected = arguments?.getInt("COLORID", -1) ?: 0
-                    spinner.setSelection(colorSelected)
-
-                    editing = true
+                        val colorSelected = arguments?.getInt("COLORID", -1) ?: 0
+                        spinner.setSelection(colorSelected)
+                        editing = true
+                    }
+                    // Y si no significa que están creando una lista compartida y que se debe mostrar
+                    // la lista de usuarios
+                    else {
+                        sharedList = true
+                    }
                 }
             }
 
+            // Si la lista es compartida, tenemos que mostrar la lista de users
+            // Si no, la deshabilitamos
+            if(!sharedList){
+                usersLayout.visibility = View.GONE
+            }
 
             builder.setView(dialogView)
                 .setPositiveButton(R.string.save, null)
                 .setNegativeButton(R.string.cancel) { dialog, _ -> dialog.dismiss() }
 
+            // Si está editando, habilitamos la edición
             if (editing) {
                 builder.setNeutralButton(R.string.eliminar){_,_ ->sendValues(true)}
             }
+
 
             val dialog = builder.create()
 
