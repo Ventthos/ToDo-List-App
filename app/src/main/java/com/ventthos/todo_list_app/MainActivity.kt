@@ -228,7 +228,9 @@ class MainActivity : AppCompatActivity(), TaskDialogFragment.TaskEditListener, L
 
         //Configuramos el escuchar las listas
         taskModel.listenToSharedLists {
+            runFilters()
             redrawLists()
+            changePageStyles()
         }
         runFilters()
         redrawLists()
@@ -334,7 +336,7 @@ class MainActivity : AppCompatActivity(), TaskDialogFragment.TaskEditListener, L
         // Obtenemos la referencia de la lista interna de tasks en cada lista
         val taskListRef = taskModel.database.getReference("lists").child(list.remoteId!!).child("tasks")
         // Creamos la task que va a subirse
-        val newTask = Task(-1, title, notes, importance, date )
+        val newTask = Task(-1, title, notes, importance, date, colorId = list.color )
         newTask.userIdCreated = taskModel.currentUserId
 
         taskListRef.push().setValue(newTask)
@@ -379,6 +381,22 @@ class MainActivity : AppCompatActivity(), TaskDialogFragment.TaskEditListener, L
             lists.push().setValue(editedList)
             return
         }
+        // Tenemos que igual ponerle las tasks, ya que si no, las pierde
+        val sharedList = taskModel.sharedLists.firstOrNull{it.id == taskModel.currentPage}
+
+        // Por si la borran mientras editan
+        if(sharedList == null) {
+            Toast.makeText(this, "La lista que se quería editar ya no existe", Toast.LENGTH_SHORT)
+                .show()
+            return
+        }
+
+        // Esto es para actualizar el color de las tareas
+        val updatedColorTask = sharedList.tasks!!.map { task->
+            task.copy(colorId = colorId)
+        }
+        // las tengo que actualizar obvio
+        editedList.tasks = updatedColorTask.toMutableList()
 
         lists.child(id).setValue(editedList)
     }
@@ -417,7 +435,7 @@ class MainActivity : AppCompatActivity(), TaskDialogFragment.TaskEditListener, L
                 taskModel.filtrateCompleted(recyclerView)
             }
             else ->{
-                taskModel.filterByList(recyclerView)
+                taskModel.filterByList(recyclerView, taskModel.currentPage < -4)
             }
         }
 

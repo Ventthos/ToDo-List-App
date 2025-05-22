@@ -92,7 +92,9 @@ class ItemAdapter(
             Log.i("xddd Hoy", hoy.toString())
             vencida = hoy > fecha
         }
-
+        else{
+            holder.dateContainer.visibility = View.GONE
+        }
 
         // Color settings
         val color = if(!vencida) basicColors[item.colorId] else grayColor

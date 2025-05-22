@@ -18,6 +18,7 @@ import com.ventthos.todo_list_app.db.Daos.UserDao
 import com.ventthos.todo_list_app.db.dataclasses.TaskList
 import com.ventthos.todo_list_app.db.dataclasses.Task
 import com.google.firebase.database.GenericTypeIndicator
+import com.ventthos.todo_list_app.db.dataclasses.TaskListFirebase
 
 enum class SortOrder {
     DEFAULT,
@@ -215,11 +216,12 @@ class TaskModel: ViewModel() {
             taskAdapter.updateList(filteredTasks, recyclerView)
             return
         }
-        val sharedTasks = sharedLists.first { it.id == currentPage}.tasks
+        val sharedTasks = sharedLists.firstOrNull { it.id == currentPage}?.tasks
 
         if(sharedTasks != null){
             filteredTasks = sharedTasks
-            Log.i("YEA", " se pudo encontrar")
+            taskAdapter.updateList(filteredTasks, recyclerView)
+            Log.i("YEA", filteredTasks.toString())
             return
         }
         else{
@@ -242,19 +244,40 @@ class TaskModel: ViewModel() {
             override fun onDataChange(snapshot: DataSnapshot) {
                 // Obtenemos cada una de los list lo mapeamos en un id local por problemas con
                 // lo de que el drawer solo puede aceptar numeros
+
                 sharedLists.clear()
                 for (childSnapshot in snapshot.children) {
-                    val taskList = childSnapshot.getValue(TaskList::class.java)
                     val firebaseId = childSnapshot.key
+                    val firebaseTaskList = childSnapshot.getValue(TaskListFirebase::class.java)
 
-                    if (firebaseId != null && taskList != null) {
+                    if (firebaseId != null && firebaseTaskList != null) {
                         val hashcode = firebaseId.hashCode()
-                        taskList.id = if(hashcode < 0) hashcode else -hashcode
-                        Log.i("Menu", "Creando item con id ${taskList.id} para lista ${taskList.name}")
-                        taskList.remoteId = firebaseId
-                        sharedLists.add(taskList)
+                        val fullTaskList = TaskList(
+                            id = if (hashcode < 0) hashcode else -hashcode,
+                            name = firebaseTaskList.name,
+                            color = firebaseTaskList.color,
+                            iconName = firebaseTaskList.iconName,
+                            iconId = firebaseTaskList.iconId,
+                            userId = firebaseTaskList.userId,
+                        )
+
+                        fullTaskList.remoteId = firebaseId
+
+                        // Cargar tareas manualmente
+                        val tasks = mutableListOf<Task>()
+                        val tasksSnapshot = childSnapshot.child("tasks")
+                        for (taskSnap in tasksSnapshot.children) {
+                            val task = taskSnap.getValue(Task::class.java)
+                            if (task != null) {
+                                tasks.add(task)
+                            }
+                        }
+                        fullTaskList.tasks = tasks
+
+                        sharedLists.add(fullTaskList)
                     }
                 }
+
                 updater() // llamada al callback, que es el actualizador de datos
             }
 

@@ -19,9 +19,9 @@ import androidx.room.PrimaryKey
 )
 data class Task(
     @PrimaryKey(autoGenerate = true) var id: Int = 0,
-    var title: String,
+    var title: String = "",
     var notes: String = "",
-    var importance: Int,
+    var importance: Int = 0,
     var date: String? = null,
     var completed: Boolean = false,
     val listId: Int = 0,
