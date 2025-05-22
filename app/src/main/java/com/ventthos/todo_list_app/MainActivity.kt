@@ -308,15 +308,37 @@ class MainActivity : AppCompatActivity(), TaskDialogFragment.TaskEditListener, L
         date: String,
         editing: Boolean
     ) {
-        taskModel.getListFromDb(this)
-        redrawLists()
-        if(!editing){
-            taskModel.createTask(title, notes, importance, date, taskModel.currentPage)
-        }
-        else{
+        // El primer caso es que sea una tarea local, las tareas locales tienen IDS mayor a 0
+        if(taskModel.currentPage > 0){
+            taskModel.getListFromDb(this)
+            redrawLists()
+            if(!editing){
+                taskModel.createTask(title, notes, importance, date, taskModel.currentPage)
+                runFilters()
+                return
+            }
             taskModel.editTask(id, title, notes, importance,date)
+            runFilters()
+            return
         }
-        runFilters()
+
+        // De lo contrario es una lista de Firebase, entonces buscamos la lista
+        val list = taskModel.sharedLists.find { it.id == taskModel.currentPage }
+        if(list == null){
+            // Para casos en los que la lista ya no existe
+            taskModel.currentPage = 0
+            runFilters()
+            Toast.makeText(this, "La lista ya no se encuentra disponible", Toast.LENGTH_SHORT).show()
+            return
+        }
+        // Obtenemos la referencia de la lista interna de tasks en cada lista
+        val taskListRef = taskModel.database.getReference("lists").child(list.remoteId!!).child("tasks")
+        // Creamos la task que va a subirse
+        val newTask = Task(-1, title, notes, importance, date )
+        newTask.userIdCreated = taskModel.currentUserId
+
+        taskListRef.push().setValue(newTask)
+
     }
 
     override fun onListEdited(id: Int, title: String, icon: Int, colorId: Int, editing: Boolean) {
