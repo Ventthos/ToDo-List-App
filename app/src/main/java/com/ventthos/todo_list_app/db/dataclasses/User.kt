@@ -17,5 +17,6 @@ data class User(
     val password: String,
 
     var avatar: Int,
+    var remoteId : String,
     var lastPage: Int = -1
 )
