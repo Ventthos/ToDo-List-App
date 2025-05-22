@@ -18,17 +18,17 @@ import androidx.room.PrimaryKey
 )
 data class TaskList(
     @PrimaryKey (autoGenerate = true) var id: Int = 0,
-    var name: String,
-    var color: Int,
-    var iconName :String,
-    var iconId: Int,
+    var name: String = "",
+    var color: Int = 0,
+    var iconName :String = "",
+    var iconId: Int = 0,
     var userId :Int = -1,
 )
 {
     // Firebase cosas
     @Ignore var remoteId: String? = null
-    @Ignore var ownerId: Int? = null
     @Ignore var sharedUsers: MutableList<UserFromSharedList>? = null
+    @Ignore var tasks: MutableList<Task>? = null
 }
 
 

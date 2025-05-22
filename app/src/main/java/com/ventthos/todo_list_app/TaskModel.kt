@@ -1,15 +1,23 @@
 package com.ventthos.todo_list_app
 
+import android.content.ContentValues.TAG
 import android.content.Context
 import android.util.Log
 import android.widget.Spinner
+import androidx.core.util.Function
 import androidx.lifecycle.ViewModel
 import androidx.recyclerview.widget.RecyclerView
+import com.google.firebase.Firebase
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
+import com.google.firebase.database.ValueEventListener
+import com.google.firebase.database.database
 import com.ventthos.todo_list_app.db.Daos.TaskDao
 import com.ventthos.todo_list_app.db.Daos.TaskListDao
 import com.ventthos.todo_list_app.db.Daos.UserDao
 import com.ventthos.todo_list_app.db.dataclasses.TaskList
 import com.ventthos.todo_list_app.db.dataclasses.Task
+import com.google.firebase.database.GenericTypeIndicator
 
 enum class SortOrder {
     DEFAULT,
@@ -42,6 +50,9 @@ class TaskModel: ViewModel() {
 
     var currentPage = -1
     var itemPosition = -1
+
+    // Declaración de la db
+    val database = Firebase.database
 
     fun getTasks(){
         tasks.clear()
@@ -198,9 +209,59 @@ class TaskModel: ViewModel() {
 
     }
 
-    fun filterByList(recyclerView: RecyclerView){
-        filteredTasks = tasks.filter { it.listId == currentPage }.toMutableList()
-        taskAdapter.updateList(filteredTasks, recyclerView)
+    fun filterByList(recyclerView: RecyclerView, shared: Boolean = false){
+        if(!shared){
+            filteredTasks = tasks.filter { it.listId == currentPage }.toMutableList()
+            taskAdapter.updateList(filteredTasks, recyclerView)
+            return
+        }
+        val sharedTasks = sharedLists.first { it.id == currentPage}.tasks
+
+        if(sharedTasks != null){
+            filteredTasks = sharedTasks
+            Log.i("YEA", " se pudo encontrar")
+            return
+        }
+        else{
+            currentPage = 0
+            Log.i("ÑAO", "no se pudo encontrar")
+        }
+    }
+
+
+    // Toda la lógica de Firebase
+
+    // Aqui se guardan todas las listas del usuario que están en firebase
+    var sharedLists = mutableListOf<TaskList>()
+    // Filtramos por las listas que tiene el usuario o toDO por en las que está incluido
+    val sharedListsRef = database.getReference("lists").orderByChild("id").equalTo(currentUserId.toDouble())
+
+    // Función para poder empezar a escuchar los cambios
+    fun listenToSharedLists(updater: () -> Unit) {
+        sharedListsRef.addValueEventListener(object: ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                // Obtenemos cada una de los list lo mapeamos en un id local por problemas con
+                // lo de que el drawer solo puede aceptar numeros
+                sharedLists.clear()
+                for (childSnapshot in snapshot.children) {
+                    val taskList = childSnapshot.getValue(TaskList::class.java)
+                    val firebaseId = childSnapshot.key
+
+                    if (firebaseId != null && taskList != null) {
+                        val hashcode = firebaseId.hashCode()
+                        taskList.id = if(hashcode < 0) hashcode else -hashcode
+                        Log.i("Menu", "Creando item con id ${taskList.id} para lista ${taskList.name}")
+                        taskList.remoteId = firebaseId
+                        sharedLists.add(taskList)
+                    }
+                }
+                updater() // llamada al callback, que es el actualizador de datos
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                Log.w(TAG, "Failed to read value.", error.toException())
+            }
+        })
     }
 
 }

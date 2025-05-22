@@ -98,4 +98,5 @@
     <string name="addSharedLists">Agregar listas compartidas</string>
     <string name="usersInThisList">Usuarios en esta lista</string>
     <string name="add">Agregar</string>
+    <string name="resendInvitation">Reenviar Inv.</string>
 </resources>

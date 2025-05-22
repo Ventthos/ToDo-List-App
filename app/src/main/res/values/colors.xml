@@ -8,6 +8,11 @@
     <color name="silver">#cbcbcb</color>
     <color name="buttonBlue">#00264D</color>
     <color name="buttonBlue2">#1E88E5</color>
+    <color name="cancelingRed">#ef1f25</color>
+    <color name="pastelCancelingRed">#f88b94</color>
+    <color name="pastelAccept">#72d478</color>
+    <color name="pastelPending">#ffef8d</color>
+    <color name="pastelBlue">#acdef9</color>
 
     <color name="colorPrimary">#8E2DE2</color>
     <color name="colorSecondary">#4A00E0</color>

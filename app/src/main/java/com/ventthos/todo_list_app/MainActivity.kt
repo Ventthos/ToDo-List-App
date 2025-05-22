@@ -56,8 +56,6 @@ class MainActivity : AppCompatActivity(), TaskDialogFragment.TaskEditListener, L
     lateinit var pageTitle: TextView
     lateinit var coordinatorLayout: CoordinatorLayout
     private val taskModel: TaskModel by viewModels()
-    lateinit var database: FirebaseDatabase
-
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -117,9 +115,6 @@ class MainActivity : AppCompatActivity(), TaskDialogFragment.TaskEditListener, L
 
 
         //termina logica db
-
-        // Declaración de variables de Firebase
-        database = Firebase.database
 
 
         //Logica del reciclerView
@@ -215,8 +210,9 @@ class MainActivity : AppCompatActivity(), TaskDialogFragment.TaskEditListener, L
 
             sessionDao.updateCurrentPageForUser(taskModel.currentUserId, taskModel.currentPage)
 
-            changePageStyles()
+
             runFilters(true)
+            changePageStyles()
             drawerLayout.closeDrawer(GravityCompat.START)
             true
         }
@@ -228,6 +224,11 @@ class MainActivity : AppCompatActivity(), TaskDialogFragment.TaskEditListener, L
 
         taskModel.getListFromDb(this)
         taskModel.getTasks()
+
+        //Configuramos el escuchar las listas
+        taskModel.listenToSharedLists {
+            redrawLists()
+        }
         runFilters()
         redrawLists()
     }
@@ -261,8 +262,23 @@ class MainActivity : AppCompatActivity(), TaskDialogFragment.TaskEditListener, L
                 pageTitle.setText(R.string.completedVista)
             }
             else->{
-                val list = taskModel.lists.first { it.id == taskModel.currentPage }
-                pageTitle.text = list.name
+                var listToFiltrate = taskModel.lists
+                Log.i("El ID", taskModel.currentPage.toString())
+                if(taskModel.currentPage < -4){
+                    listToFiltrate = taskModel.sharedLists
+                }
+                val list = listToFiltrate.firstOrNull { it.id == taskModel.currentPage }
+
+                if (list != null) {
+                    pageTitle.text = list.name
+                } else {
+                    // Manejo cuando la lista no se encuentra
+                    Log.e("MainActivity", "Lista con ID ${taskModel.currentPage} no encontrada")
+                    pageTitle.text = "Lista no encontrada"
+                    // Opcional: resetear a una vista por defecto
+                    taskModel.currentPage = -1
+                    pageTitle.setText(R.string.allVista)
+                }
             }
         }
 
@@ -332,7 +348,7 @@ class MainActivity : AppCompatActivity(), TaskDialogFragment.TaskEditListener, L
         editing: Boolean
     ) {
         if(!editing){
-            val lists = database.getReference("lists")
+            val lists = taskModel.database.getReference("lists")
             lists.push().setValue(TaskList(-1, title, colorId, "", icon, taskModel.currentUserId))
         }
     }
@@ -343,6 +359,16 @@ class MainActivity : AppCompatActivity(), TaskDialogFragment.TaskEditListener, L
         for (list in taskModel.lists){
             val item = listsMenu?.add(0,list.id.hashCode(), 0, list.name)
             item?.setIcon(list.iconId)
+        }
+        // Esta es para poder mostrar las listas compartidas
+        // Primero buscamos el submenu
+        val sharedListsMenu = navigationView.menu.findItem(R.id.sharedListsMenuDisplay).subMenu
+        // Le borramos todo
+        sharedListsMenu?.clear()
+        // Le metemos cada uno de las listas
+        for(sharedList in taskModel.sharedLists){
+            val item = sharedListsMenu?.add(0,sharedList.id, 0, sharedList.name)
+            item?.setIcon(sharedList.iconId)
         }
     }
 
@@ -397,6 +423,11 @@ class MainActivity : AppCompatActivity(), TaskDialogFragment.TaskEditListener, L
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean = when(item.itemId){
         R.id.editList_nav->{
+            if(taskModel.currentPage < -4){
+                val list = taskModel.sharedLists.first { it.id == taskModel.currentPage }
+                ListDialogFragment.setArguments(list.id.hashCode(), list.name, list.iconId, list.color).show(supportFragmentManager,"EditList")
+                true
+            }
             val list = taskModel.lists.first { it.id == taskModel.currentPage }
             ListDialogFragment.setArguments(list.id.hashCode(), list.name, list.iconId, list.color).show(supportFragmentManager,"EditList")
             true
