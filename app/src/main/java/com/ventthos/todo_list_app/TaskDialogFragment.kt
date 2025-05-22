@@ -27,12 +27,14 @@ class TaskDialogFragment: DialogFragment(), DateDialogFragment.DatePickerListene
     private val IMPORTANCETAG = "importanceSelected"
     private val DATETAG = "DateSelected"
     private val EDITINGTAG = "TaskEditState"
+    private val REMOTEIDTAG = "RemoteId"
 
     private var id = -1
     private var editing = false
+    private var remoteId = ""
 
     interface TaskEditListener {
-        fun onTaskEdit(id: Int, title: String,notes: String, importance: Int, date: String, editing: Boolean)
+        fun onTaskEdit(id: Int, title: String,notes: String, importance: Int, date: String, editing: Boolean, remoteId: String?)
     }
 
     private var listener: TaskEditListener? = null
@@ -42,7 +44,7 @@ class TaskDialogFragment: DialogFragment(), DateDialogFragment.DatePickerListene
         val notes = notesInput.text.toString()
         val importance = importanceSelector.selectedItemPosition
         val date = dateSelector.text.toString()
-        listener?.onTaskEdit(id, title, notes,importance,date,editing)
+        listener?.onTaskEdit(id, title, notes,importance,date,editing, remoteId)
     }
 
     override fun onAttach(context: Context) {
@@ -61,7 +63,8 @@ class TaskDialogFragment: DialogFragment(), DateDialogFragment.DatePickerListene
             title: String = "",
             notes: String = "",
             importance: Int = 0,
-            date: String? = null
+            date: String? = null,
+            remoteId: String? = ""
         ): TaskDialogFragment {
             val fragment = TaskDialogFragment()
             val args = Bundle()
@@ -71,6 +74,7 @@ class TaskDialogFragment: DialogFragment(), DateDialogFragment.DatePickerListene
             args.putString("NOTES", notes)
             args.putInt("IMPORTANCE", importance)
             args.putString("DATE", date ?: "")
+            args.putString("REMOTEID", remoteId)
 
             fragment.arguments = args
             return fragment
@@ -109,7 +113,7 @@ class TaskDialogFragment: DialogFragment(), DateDialogFragment.DatePickerListene
                 importanceSelector.setSelection(savedInstanceState.getInt(IMPORTANCETAG, 0))
                 dateSelector.setText(savedInstanceState.getString(DATETAG, ""))
                 editing = savedInstanceState.getBoolean(EDITINGTAG)
-
+                remoteId = savedInstanceState.getString(REMOTEIDTAG, "")
 
             }
             else {
@@ -121,6 +125,8 @@ class TaskDialogFragment: DialogFragment(), DateDialogFragment.DatePickerListene
                     importanceSelector.setSelection(arguments?.getInt("IMPORTANCE", 0) ?: 0)
                     dateSelector.setText(arguments?.getString("DATE", "") ?: "")
                     editing = true
+                    remoteId = arguments?.getString("REMOTEID", "")?: ""
+                    Log.i("ME HAN PROPORCIONADO", remoteId)
                 }
             }
 

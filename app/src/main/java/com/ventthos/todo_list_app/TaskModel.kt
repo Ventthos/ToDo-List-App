@@ -269,6 +269,7 @@ class TaskModel: ViewModel() {
                         for (taskSnap in tasksSnapshot.children) {
                             val task = taskSnap.getValue(Task::class.java)
                             if (task != null) {
+                                task.remoteId = taskSnap.key
                                 tasks.add(task)
                             }
                         }
