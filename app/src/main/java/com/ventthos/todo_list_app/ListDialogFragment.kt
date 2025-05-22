@@ -3,6 +3,7 @@ package com.ventthos.todo_list_app
 import android.app.AlertDialog
 import android.app.Dialog
 import android.content.Context
+import android.icu.util.Output
 import android.os.Bundle
 import android.util.Log
 import android.view.View
@@ -31,11 +32,14 @@ class ListDialogFragment : DialogFragment(), IconPicker.IconPickerListener{
     private val TITLETAG = "TitleSelected"
     private val ICONTAG = "IconSelected"
     private val EDITINGTAG = "TaskEditState"
+    private val REMOTEIDTAG = "RemoteId"
+    private val SHAREDLISTTAG = "SharedList"
+    private val SHAREDUSERSTAG = "SharedUsersTag"
 
     // Para poder hacer cosas de firebase
     private var sharedList = false
-    private val remoteId = ""
-    private val sharedUsers: MutableList<UserFromSharedList> = mutableListOf()
+    private var remoteId = ""
+    private var sharedUsers: MutableList<UserFromSharedList> = mutableListOf()
 
     companion object {
         fun setArguments(
@@ -43,7 +47,7 @@ class ListDialogFragment : DialogFragment(), IconPicker.IconPickerListener{
             title: String = "",
             currentIcon: Int,
             colorId: Int,
-            sharedList: Boolean = false,
+            remoteId: String = "",
             sharedUsers: List<UserFromSharedList>? = null
         ): ListDialogFragment {
             val fragment = ListDialogFragment()
@@ -54,8 +58,9 @@ class ListDialogFragment : DialogFragment(), IconPicker.IconPickerListener{
             args.putInt("ICON", currentIcon)
             args.putInt("COLORID", colorId)
             args.putBoolean("EDITING", true)
-            args.putBoolean("SHAREDLIST", sharedList)
-            args.putSerializable("SHAREDUSERS", ArrayList(sharedUsers))
+
+            args.putString("REMOTEID", remoteId)
+            args.putSerializable("SHAREDUSERS", ArrayList(sharedUsers ?: emptyList()))
 
             fragment.arguments = args
             return fragment
@@ -74,7 +79,7 @@ class ListDialogFragment : DialogFragment(), IconPicker.IconPickerListener{
     interface ListEditorListener {
         fun onListEdited(id: Int, title: String, icon: Int, colorId: Int, editing: Boolean)
         fun onListDeleted(id: Int, title: String, icon: Int, colorId: Int, editing: Boolean)
-        fun onSharedListEdited(id: String, title: String, icon: Int, colorId: Int, editing: Boolean)
+        fun onSharedListEdited(id: String, title: String, icon: Int, colorId: Int, editing: Boolean, sharedUsersList: MutableList<UserFromSharedList>)
     }
 
     private var listener: ListEditorListener? = null
@@ -103,7 +108,7 @@ class ListDialogFragment : DialogFragment(), IconPicker.IconPickerListener{
         else if(deleting && sharedList){
 
         }
-        listener?.onSharedListEdited(remoteId, title, currentIcon, color?.colorId?: basicColors.first().colorId, editing)
+        listener?.onSharedListEdited(remoteId, title, currentIcon, color?.colorId?: basicColors.first().colorId, editing, sharedUsers)
     }
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
@@ -131,6 +136,10 @@ class ListDialogFragment : DialogFragment(), IconPicker.IconPickerListener{
                 id = savedInstanceState.getInt(IDTAG)
                 onIconSelected(savedInstanceState.getInt(ICONTAG))
                 editing = savedInstanceState.getBoolean(EDITINGTAG)
+
+                remoteId = savedInstanceState.getString(REMOTEIDTAG)?: ""
+                sharedUsers = savedInstanceState.getSerializable(SHAREDUSERSTAG) as? ArrayList<UserFromSharedList> ?: arrayListOf()
+                sharedList = savedInstanceState.getBoolean(SHAREDLISTTAG)
             }
             else {
                 // Cargar valores iniciales desde argumentos
@@ -141,10 +150,14 @@ class ListDialogFragment : DialogFragment(), IconPicker.IconPickerListener{
                         id = arguments?.getInt("ID", -1)?:-1
                         titleInput.setText(arguments?.getString("TITLE", "") ?: "")
                         onIconSelected(arguments?.getInt("ICON", -1) ?: -1)
-
                         val colorSelected = arguments?.getInt("COLORID", -1) ?: 0
+
                         spinner.setSelection(colorSelected)
                         editing = true
+
+                        remoteId = arguments?.getString("REMOTEID", "")?:""
+                        sharedUsers = arguments?.getSerializable("SHAREDUSERS") as? ArrayList<UserFromSharedList> ?: arrayListOf()
+                        sharedList = remoteId != ""
                     }
                     // Y si no significa que están creando una lista compartida y que se debe mostrar
                     // la lista de usuarios
@@ -229,5 +242,8 @@ class ListDialogFragment : DialogFragment(), IconPicker.IconPickerListener{
         outState.putString(TITLETAG, titleInput.text.toString())
         outState.putInt(ICONTAG, currentIcon)
         outState.putBoolean(EDITINGTAG, editing)
+        outState.putString(REMOTEIDTAG, remoteId)
+        outState.putSerializable(SHAREDUSERSTAG, ArrayList(sharedUsers))
+        outState.putBoolean(SHAREDLISTTAG, sharedList)
     }
 }

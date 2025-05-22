@@ -34,6 +34,7 @@ import android.widget.ImageView
 import com.google.firebase.Firebase
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.database
+import com.ventthos.todo_list_app.db.dataclasses.UserFromSharedList
 import java.util.Locale
 
 
@@ -282,7 +283,7 @@ class MainActivity : AppCompatActivity(), TaskDialogFragment.TaskEditListener, L
             }
         }
 
-        if(taskModel.currentPage < 0 && toolbar.menu.hasVisibleItems()){
+        if(taskModel.currentPage < 0 && taskModel.currentPage >= -4 && toolbar.menu.hasVisibleItems()){
 
             for (i in 0 until toolbar.menu.size()) {
                 toolbar.menu.getItem(i).isVisible = false
@@ -290,7 +291,7 @@ class MainActivity : AppCompatActivity(), TaskDialogFragment.TaskEditListener, L
             fab.visibility = View.GONE
             return
         }
-        else if(taskModel.currentPage >= 0 && !toolbar.menu.hasVisibleItems()){
+        else if((taskModel.currentPage >= 0 || taskModel.currentPage < -4) && !toolbar.menu.hasVisibleItems()){
             for (i in 0 until toolbar.menu.size()) {
                 toolbar.menu.getItem(i).isVisible = true
             }
@@ -345,12 +346,19 @@ class MainActivity : AppCompatActivity(), TaskDialogFragment.TaskEditListener, L
         title: String,
         icon: Int,
         colorId: Int,
-        editing: Boolean
+        editing: Boolean,
+        sharedUsersList: MutableList<UserFromSharedList>
     ) {
+        val lists = taskModel.database.getReference("lists")
+        val editedList = TaskList(-1, title, colorId, "", icon, taskModel.currentUserId)
+        editedList.sharedUsers = sharedUsersList
+
         if(!editing){
-            val lists = taskModel.database.getReference("lists")
-            lists.push().setValue(TaskList(-1, title, colorId, "", icon, taskModel.currentUserId))
+            lists.push().setValue(editedList)
+            return
         }
+
+        lists.child(id).setValue(editedList)
     }
 
     fun redrawLists(){
@@ -425,12 +433,14 @@ class MainActivity : AppCompatActivity(), TaskDialogFragment.TaskEditListener, L
         R.id.editList_nav->{
             if(taskModel.currentPage < -4){
                 val list = taskModel.sharedLists.first { it.id == taskModel.currentPage }
-                ListDialogFragment.setArguments(list.id.hashCode(), list.name, list.iconId, list.color).show(supportFragmentManager,"EditList")
+                ListDialogFragment.setArguments(list.id.hashCode(), list.name, list.iconId, list.color, list.remoteId!!, list.sharedUsers).show(supportFragmentManager,"EditList")
                 true
             }
-            val list = taskModel.lists.first { it.id == taskModel.currentPage }
-            ListDialogFragment.setArguments(list.id.hashCode(), list.name, list.iconId, list.color).show(supportFragmentManager,"EditList")
-            true
+            else{
+                val list = taskModel.lists.first { it.id == taskModel.currentPage }
+                ListDialogFragment.setArguments(list.id, list.name, list.iconId, list.color).show(supportFragmentManager,"EditList")
+                true
+            }
         }
         R.id.order_by_importance_descending_menu->{
             taskModel.currentSortOrder = SortOrder.IMPORTANCE_DESC
