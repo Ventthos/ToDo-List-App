@@ -7,5 +7,5 @@ data class TaskListFirebase(
     var color: Int = 0,
     var iconName: String = "",
     var iconId: Int = 0,
-    var userId: Int = -1,
+    var userId: String = "",
 )

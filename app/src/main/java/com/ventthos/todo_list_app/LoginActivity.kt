@@ -2,6 +2,7 @@ package com.ventthos.todo_list_app
 
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.util.Patterns
 import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
@@ -33,17 +34,17 @@ class LoginActivity : AppCompatActivity() {
         forgotPasswordText = findViewById(R.id.forgotPasswordText)
 
         database = FirebaseDatabase.getInstance().getReference("users")
-
         val sessionDao = AppDatabase.getDatabase(this).sessionDao()
 
-        // Si ya hay sesión, redirigir
         CoroutineScope(Dispatchers.IO).launch {
             val session = sessionDao.getActiveSession()
             if (session != null) {
-                startActivity(Intent(this@LoginActivity, MainActivity::class.java).apply {
-                    putExtra("userId", session.userId)
-                })
-                finish()
+                runOnUiThread {
+                    startActivity(Intent(this@LoginActivity, MainActivity::class.java).apply {
+                        putExtra("userId", session.userId)
+                    })
+                    finish()
+                }
             }
         }
 
@@ -66,20 +67,25 @@ class LoginActivity : AppCompatActivity() {
                 return@setOnClickListener
             }
 
-            // Buscar en Firebase
             database.orderByChild("email").equalTo(email)
                 .addListenerForSingleValueEvent(object : ValueEventListener {
                     override fun onDataChange(snapshot: DataSnapshot) {
                         if (snapshot.exists()) {
                             for (userSnapshot in snapshot.children) {
                                 val dbPassword = userSnapshot.child("password").getValue(String::class.java)
-                                if (dbPassword == password) {
-                                    val userId = userSnapshot.key!!.toIntOrNull() ?: userSnapshot.key.hashCode()
+                                Log.d("LOGIN_DEBUG", "email buscado: '$email'")
+                                Log.d("LOGIN_DEBUG", "Encontrados: ${snapshot.childrenCount}")
+                                for (userSnapshot in snapshot.children) {
+                                    val dbEmail = userSnapshot.child("email").getValue(String::class.java)
+                                    val dbPassword = userSnapshot.child("password").getValue(String::class.java)
+                                    Log.d("LOGIN_DEBUG", "-> Firebase email: '$dbEmail', password: '$dbPassword'")
+                                }
 
-                                    // Guardar sesión local
+                                if (dbPassword == password) {
+                                    val userId = userSnapshot.key!!
                                     CoroutineScope(Dispatchers.IO).launch {
                                         sessionDao.clearSession()
-                                        sessionDao.insertSession(Session(userId = userId))
+                                        sessionDao.insertSession(Session(userId = userId))  // Ajusta Session si era Int
 
                                         runOnUiThread {
                                             startActivity(Intent(this@LoginActivity, MainActivity::class.java).apply {

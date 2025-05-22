@@ -65,12 +65,12 @@ class RegisterActivity : AppCompatActivity() {
             val userId = usersRef.push().key ?: return@setOnClickListener
 
             val user = User(
+                id = userId,
                 name = name,
                 lastName = lastName,
                 email = email,
                 password = password,
                 avatar = selectedAvatarResId,
-                remoteId = userId
             )
 
             usersRef.child(userId).setValue(user)
