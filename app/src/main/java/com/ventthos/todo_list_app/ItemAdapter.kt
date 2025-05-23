@@ -120,6 +120,7 @@ class ItemAdapter(
     fun updateList(newList: List<Task>, recyclerView: RecyclerView) {
         itemList.clear()
         itemList.addAll(newList)
+        Log.i("Filtered new List", newList.toString())
         recyclerView.post {
             notifyDataSetChanged()
         }

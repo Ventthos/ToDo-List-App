@@ -139,7 +139,7 @@ class TaskModel: ViewModel() {
     }
 
     fun orderByImportance(descendingOrder: Boolean,recyclerView: RecyclerView){
-
+        Log.i("Filtered",filteredTasks.toString())
         if (descendingOrder){
             filteredTasks.sortByDescending { it.importance }
             currentSortOrder = SortOrder.IMPORTANCE_DESC
@@ -148,11 +148,13 @@ class TaskModel: ViewModel() {
             filteredTasks.sortBy{ it.importance }
             currentSortOrder = SortOrder.IMPORTANCE_ASC
         }
+        Log.i("Filtered",filteredTasks.toString())
         taskAdapter.updateList(filteredTasks, recyclerView)
     }
 
     fun orderByDate(descendingOrder: Boolean = true,recyclerView: RecyclerView){
         if(descendingOrder){
+            Log.i("Filtered",filteredTasks.toString())
             filteredTasks.sortByDescending { it.date }
             currentSortOrder = SortOrder.DATE_DESC
         }
@@ -164,7 +166,15 @@ class TaskModel: ViewModel() {
     }
 
     fun setCompletedVisibility(hide: Boolean = true, recyclerView: RecyclerView){
-        var tasksVisibility = filteredTasks.filter { it.listId == currentPage}.toMutableList()
+        var tasksVisibility = mutableListOf<Task>()
+        if(currentPage > 0){
+            tasksVisibility = filteredTasks.filter { it.listId == currentPage}.toMutableList()
+        }
+        else{
+            val currentList = sharedLists.firstOrNull { it.id == currentPage }
+            if(currentList == null) return
+            tasksVisibility = currentList.tasks!!.toMutableList()
+        }
         if(hide){
             tasksVisibility = tasksVisibility.filter { !it.completed }.toMutableList()
         }
@@ -259,7 +269,7 @@ class TaskModel: ViewModel() {
     // Aqui se guardan todas las listas del usuario que están en firebase
     var sharedLists = mutableListOf<TaskList>()
     // Filtramos por las listas que tiene el usuario o toDO por en las que está incluido
-    val sharedListsRef = database.getReference("lists").orderByChild("id").equalTo(currentUserId.toDouble())
+    var sharedListsRef = database.getReference("lists").orderByChild("userId").equalTo(currentUserId.toDouble())
 
     // Función para poder empezar a escuchar los cambios
     fun listenToSharedLists(updater: () -> Unit) {
@@ -267,7 +277,7 @@ class TaskModel: ViewModel() {
             override fun onDataChange(snapshot: DataSnapshot) {
                 // Obtenemos cada una de los list lo mapeamos en un id local por problemas con
                 // lo de que el drawer solo puede aceptar numeros
-
+                Log.i("Pidiendo con" , currentUserId.toDouble().toString())
                 sharedLists.clear()
                 for (childSnapshot in snapshot.children) {
                     val firebaseId = childSnapshot.key

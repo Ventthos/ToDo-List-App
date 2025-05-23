@@ -102,6 +102,7 @@ class MainActivity : AppCompatActivity(), TaskDialogFragment.TaskEditListener, L
         if (userId != -1) {
             taskModel.currentUserId = userId
             val currentUser = taskModel.userDao.getUserById(userId)
+            taskModel.sharedListsRef = taskModel.database.getReference("lists").orderByChild("userId").equalTo(taskModel.currentUserId.toDouble())
             taskModel.currentPage = currentUser?.lastPage ?: -1 // Se restaura el lastPage
             if (savedInstanceState != null) {
                 taskModel.currentPage = savedInstanceState.getInt("currentPage", taskModel.currentPage)
@@ -455,7 +456,7 @@ class MainActivity : AppCompatActivity(), TaskDialogFragment.TaskEditListener, L
             taskModel.currentSortOrder = SortOrder.DEFAULT
             taskModel.onlyCompleted = true
         }
-        if (taskModel.currentPage >= 0)
+        if (taskModel.currentPage >= 0 || taskModel.currentPage < -4)
             runOrder(taskModel.currentSortOrder)
     }
 
@@ -529,6 +530,7 @@ class MainActivity : AppCompatActivity(), TaskDialogFragment.TaskEditListener, L
     }
 
     fun runOrder(order: SortOrder){
+        Log.i("Filtered", "Estoy llamando a filtered")
         when(order){
             SortOrder.IMPORTANCE_DESC->taskModel.orderByImportance(true, recyclerView)
             SortOrder.IMPORTANCE_ASC -> taskModel.orderByImportance(false, recyclerView)
