@@ -206,6 +206,22 @@ class TaskModel: ViewModel() {
         taskAdapter.notifyDataSetChanged()
     }
 
+    fun changeDataLimitForShared(id: String, date: String){
+        val list = sharedLists.firstOrNull { it.id == currentPage }
+        if(list == null) return
+        var stateRef = database.getReference("lists").child(list.remoteId!!).child("tasks").child(id).child("date")
+
+        val finalDate = if(date != "") date else null
+        stateRef.setValue(finalDate)
+    }
+
+    fun removeImportanceForShared(id: String){
+        val list = sharedLists.firstOrNull { it.id == currentPage }
+        if(list == null) return
+        var stateRef = database.getReference("lists").child(list.remoteId!!).child("tasks").child(id).child("importance")
+        stateRef.setValue(null)
+    }
+
     fun getListFromDb(context: Context){
         lists.clear()
         lists.addAll(listDao.getAllUsersList(currentUserId))

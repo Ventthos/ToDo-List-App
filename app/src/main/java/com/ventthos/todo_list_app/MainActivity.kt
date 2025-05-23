@@ -584,14 +584,24 @@ class MainActivity : AppCompatActivity(), TaskDialogFragment.TaskEditListener, L
                 true
             }
             R.id.removeImportanceMenu ->{ //Si eligieron eliminar importancia, llamamos a la función
-                taskModel.editTask(task.id, task.title, task.notes, 0, task.date)
+                if(taskModel.currentPage > -4){
+                    taskModel.editTask(task.id, task.title, task.notes, 0, task.date)
+                }
+                else{
+                    taskModel.removeImportanceForShared(task.remoteId!!)
+                }
                 runFilters()
                 true
             }
             R.id.setTodayLimitMenu->{ // Settea la fecha de hoy
                 val formatter = java.text.SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
                 val today = formatter.format(System.currentTimeMillis())
-                taskModel.changeDateLimit(task.id, today)
+                if(taskModel.currentPage > -4){
+                    taskModel.changeDateLimit(task.id, today)
+                }
+                else{
+                    taskModel.changeDataLimitForShared(task.remoteId!!, today)
+                }
                 runFilters()
                 true
             }
@@ -600,18 +610,32 @@ class MainActivity : AppCompatActivity(), TaskDialogFragment.TaskEditListener, L
                 calendar.add(java.util.Calendar.DAY_OF_YEAR, 1) // Suma un día
                 val formatter = java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.getDefault()) // Formato de fecha
                 val tomorrow = formatter.format(calendar.time)
-
-                taskModel.changeDateLimit(task.id, tomorrow)
+                if(taskModel.currentPage > -4){
+                    taskModel.changeDateLimit(task.id, tomorrow)
+                }
+                else{
+                    taskModel.changeDataLimitForShared(task.remoteId!!, tomorrow)
+                }
                 runFilters()
                 true
             }
             R.id.removeDateMenu->{ // Remueve la fecha
-                taskModel.editTask(task.id, task.title, task.notes, task.importance, null)
+                if(taskModel.currentPage > -4){
+                    taskModel.editTask(task.id, task.title, task.notes, task.importance, null)
+                }
+                else{
+                    taskModel.changeDataLimitForShared(task.remoteId!!, "")
+                }
                 runFilters()
                 true
             }
             R.id.completeActionMenu->{ // Completa la tarea
-                taskModel.changeCompleted(task.id, true)
+                if(taskModel.currentPage > -4){
+                    taskModel.changeCompleted(task.id, true)
+                }
+                else{
+                    taskModel.changeCompletedShared(task.remoteId!!, true)
+                }
                 runFilters()
                 true
             }
@@ -629,7 +653,13 @@ class MainActivity : AppCompatActivity(), TaskDialogFragment.TaskEditListener, L
         val finalDate = "${year}-${finalMonth}-${finalDay}"
         Log.i("Fecha final", finalDate)
         val task = taskModel.taskAdapter.itemList[taskModel.itemPosition]
-        taskModel.changeDateLimit(task.id, finalDate)
+
+        if(taskModel.currentPage > -4){
+            taskModel.changeDateLimit(task.id, finalDate)
+        }
+        else{
+            taskModel.changeDataLimitForShared(task.remoteId!!, finalDate)
+        }
         runFilters()
     }
 }
