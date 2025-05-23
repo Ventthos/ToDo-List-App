@@ -78,7 +78,6 @@ class TaskModel: ViewModel() {
 
 
     fun editTask(id:Int, title: String, notes: String, importance: Int, date: String?) {
-        Log.i("Oyee", "Me estan pasando ${id}")
         var finaldate = date
         if (date == ""){
             finaldate = null
@@ -98,6 +97,7 @@ class TaskModel: ViewModel() {
 
     }
     fun deleteTask(id:Int, title: String, notes: String, importance: Int, date: String?) {
+
         var finalDate = date
         if (date == "") {
             finalDate = null
@@ -107,6 +107,14 @@ class TaskModel: ViewModel() {
 
         getTasks()
         taskAdapter.notifyDataSetChanged()
+    }
+
+    fun deleteSharedTask(id: String): Boolean{
+        val list = sharedLists.firstOrNull { it.id == currentPage }
+        if(list == null) return false
+
+        database.getReference("lists").child(list.remoteId!!).child("tasks").child(id).removeValue()
+        return true
     }
 
     fun clearFilters(recyclerView: RecyclerView){
@@ -170,6 +178,16 @@ class TaskModel: ViewModel() {
         //agregar completa
         taskDao.updateTask(task)
         taskAdapter.notifyDataSetChanged()
+    }
+
+    fun changeCompletedShared(id: String, completed: Boolean): Boolean{
+        val list = sharedLists.firstOrNull { it.id == currentPage }
+        if(list == null) return false
+
+        var stateRef = database.getReference("lists").child(list.remoteId!!).child("tasks").child(id).child("completed")
+        stateRef.setValue(completed)
+        taskAdapter.notifyDataSetChanged()
+        return true
     }
 
     fun changeDateLimit(id: Int, date:String){

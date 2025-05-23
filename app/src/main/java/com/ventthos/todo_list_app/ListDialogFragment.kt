@@ -104,9 +104,10 @@ class ListDialogFragment : DialogFragment(), IconPicker.IconPickerListener{
         }
         else if(!sharedList){
             listener?.onListEdited(id, title, currentIcon, color?.colorId?: basicColors.first().colorId, editing)
+            return
         }
         else if(deleting && sharedList){
-
+            return
         }
         listener?.onSharedListEdited(remoteId, title, currentIcon, color?.colorId?: basicColors.first().colorId, editing, sharedUsers)
     }

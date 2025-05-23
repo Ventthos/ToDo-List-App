@@ -454,7 +454,12 @@ class MainActivity : AppCompatActivity(), TaskDialogFragment.TaskEditListener, L
     }
 
     override fun onTaskCheckedChanged(task: Task, isChecked: Boolean) {
-        taskModel.changeCompleted(task.id, isChecked)
+        if(task.id >0){
+            taskModel.changeCompleted(task.id, isChecked)
+        }
+        else{
+            taskModel.changeCompletedShared(task.remoteId!!, isChecked)
+        }
         runFilters()
         if(isChecked){
             val snackbar = Snackbar.make(coordinatorLayout, R.string.completedConfirmation, Snackbar.LENGTH_LONG)
@@ -554,8 +559,14 @@ class MainActivity : AppCompatActivity(), TaskDialogFragment.TaskEditListener, L
         return when (item.itemId) {
             //Si eligieron delete, pues llamamos a la función
             R.id.deleteActionMenu ->{
-                taskModel.deleteTask(task.id, task.title, task.notes, task.importance, task.date)
-                runFilters()
+                if(task.id > 0){
+                    taskModel.deleteTask(task.id, task.title, task.notes, task.importance, task.date)
+                    runFilters()
+                }
+                else{
+                    taskModel.deleteSharedTask(task.remoteId!!)
+                }
+
                 true
             }
             //Aqui para cambiar fecha de vencimiento
