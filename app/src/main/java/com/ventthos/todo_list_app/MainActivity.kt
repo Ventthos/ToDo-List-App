@@ -310,7 +310,8 @@ class MainActivity : AppCompatActivity(), TaskDialogFragment.TaskEditListener, L
         notes: String,
         importance: Int,
         date: String,
-        editing: Boolean
+        editing: Boolean,
+        remoteId: String?
     ) {
         // El primer caso es que sea una tarea local, las tareas locales tienen IDS mayor a 0
         if(taskModel.currentPage > 0){
@@ -340,6 +341,11 @@ class MainActivity : AppCompatActivity(), TaskDialogFragment.TaskEditListener, L
         // Creamos la task que va a subirse
         val newTask = Task(-1, title, notes, importance, date, colorId = list.color )
         newTask.userIdCreated = taskModel.currentUserId
+
+        if(editing){
+            taskListRef.child(remoteId!!).setValue(newTask)
+            return
+        }
 
         taskListRef.push().setValue(newTask)
 
@@ -403,6 +409,12 @@ class MainActivity : AppCompatActivity(), TaskDialogFragment.TaskEditListener, L
         lists.child(id).setValue(editedList)
     }
 
+    override fun onSharedListDeleted(id: String) {
+        taskModel.deleteSharedList(id)
+        taskModel.currentPage = -1
+        runFilters()
+    }
+
     fun redrawLists(){
         val listsMenu = navigationView.menu.findItem(R.id.listMenuDisplay).subMenu
         listsMenu?.clear()
@@ -450,7 +462,12 @@ class MainActivity : AppCompatActivity(), TaskDialogFragment.TaskEditListener, L
     }
 
     override fun onTaskCheckedChanged(task: Task, isChecked: Boolean) {
-        taskModel.changeCompleted(task.id, isChecked)
+        if(task.id >0){
+            taskModel.changeCompleted(task.id, isChecked)
+        }
+        else{
+            taskModel.changeCompletedShared(task.remoteId!!, isChecked)
+        }
         runFilters()
         if(isChecked){
             val snackbar = Snackbar.make(coordinatorLayout, R.string.completedConfirmation, Snackbar.LENGTH_LONG)
@@ -460,7 +477,8 @@ class MainActivity : AppCompatActivity(), TaskDialogFragment.TaskEditListener, L
     }
 
     override fun OnTaskClickForEdit(task: Task) {
-        TaskDialogFragment.setArguments(task.id, task.title, task.notes, task.importance, task.date)
+        Log.i("EL UD DEL TASK ES", task.remoteId.toString())
+        TaskDialogFragment.setArguments(task.id, task.title, task.notes, task.importance, task.date, task.remoteId)
             .show(supportFragmentManager, "TaskEdit")
 
     }
@@ -549,8 +567,14 @@ class MainActivity : AppCompatActivity(), TaskDialogFragment.TaskEditListener, L
         return when (item.itemId) {
             //Si eligieron delete, pues llamamos a la función
             R.id.deleteActionMenu ->{
-                taskModel.deleteTask(task.id, task.title, task.notes, task.importance, task.date)
-                runFilters()
+                if(task.id > 0){
+                    taskModel.deleteTask(task.id, task.title, task.notes, task.importance, task.date)
+                    runFilters()
+                }
+                else{
+                    taskModel.deleteSharedTask(task.remoteId!!)
+                }
+
                 true
             }
             //Aqui para cambiar fecha de vencimiento

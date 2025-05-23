@@ -78,7 +78,6 @@ class TaskModel: ViewModel() {
 
 
     fun editTask(id:Int, title: String, notes: String, importance: Int, date: String?) {
-        Log.i("Oyee", "Me estan pasando ${id}")
         var finaldate = date
         if (date == ""){
             finaldate = null
@@ -98,6 +97,7 @@ class TaskModel: ViewModel() {
 
     }
     fun deleteTask(id:Int, title: String, notes: String, importance: Int, date: String?) {
+
         var finalDate = date
         if (date == "") {
             finalDate = null
@@ -107,6 +107,14 @@ class TaskModel: ViewModel() {
 
         getTasks()
         taskAdapter.notifyDataSetChanged()
+    }
+
+    fun deleteSharedTask(id: String): Boolean{
+        val list = sharedLists.firstOrNull { it.id == currentPage }
+        if(list == null) return false
+
+        database.getReference("lists").child(list.remoteId!!).child("tasks").child(id).removeValue()
+        return true
     }
 
     fun clearFilters(recyclerView: RecyclerView){
@@ -172,6 +180,16 @@ class TaskModel: ViewModel() {
         taskAdapter.notifyDataSetChanged()
     }
 
+    fun changeCompletedShared(id: String, completed: Boolean): Boolean{
+        val list = sharedLists.firstOrNull { it.id == currentPage }
+        if(list == null) return false
+
+        var stateRef = database.getReference("lists").child(list.remoteId!!).child("tasks").child(id).child("completed")
+        stateRef.setValue(completed)
+        taskAdapter.notifyDataSetChanged()
+        return true
+    }
+
     fun changeDateLimit(id: Int, date:String){
         taskDao.updateTaskLimit(id, date)
         getTasks()
@@ -208,6 +226,11 @@ class TaskModel: ViewModel() {
         listDao.deleteList(ListToDelete)
         getTasks()
 
+    }
+
+    fun deleteSharedList(id: String){
+        database.getReference("lists").child(id).removeValue()
+        getTasks()
     }
 
     fun filterByList(recyclerView: RecyclerView, shared: Boolean = false){
@@ -268,6 +291,7 @@ class TaskModel: ViewModel() {
                         for (taskSnap in tasksSnapshot.children) {
                             val task = taskSnap.getValue(Task::class.java)
                             if (task != null) {
+                                task.remoteId = taskSnap.key
                                 tasks.add(task)
                             }
                         }
