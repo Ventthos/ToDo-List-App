@@ -93,17 +93,15 @@ class MainActivity : AppCompatActivity(), TaskDialogFragment.TaskEditListener, L
         val sessionDao = db.sessionDao()
 
         val session = sessionDao.getActiveSession()
-        val userId: String? = if (intent.hasExtra("userId")) {
-            intent.getStringExtra("userId")
+        val userId: Int = if (intent.hasExtra("userId")) {
+            intent.getIntExtra("userId", -1)
         } else {
-            session?.userId ?: ""
+            session?.userId ?: -1
         }
 
-        if (userId != "") {
-            if (userId != null) {
-                taskModel.currentUserId = userId
-            }
-            val currentUser = userId?.let { taskModel.userDao.getUserById(it) }
+        if (userId != -1) {
+            taskModel.currentUserId = userId
+            val currentUser = taskModel.userDao.getUserById(userId)
             taskModel.currentPage = currentUser?.lastPage ?: -1 // Se restaura el lastPage
             if (savedInstanceState != null) {
                 taskModel.currentPage = savedInstanceState.getInt("currentPage", taskModel.currentPage)

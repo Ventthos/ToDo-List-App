@@ -22,7 +22,7 @@ data class TaskList(
     var color: Int = 0,
     var iconName :String = "",
     var iconId: Int = 0,
-    var userId :String = "",
+    var userId :Int = -1,
 )
 {
     // Firebase cosas

@@ -30,7 +30,7 @@ enum class SortOrder {
 
 class TaskModel: ViewModel() {
 
-    var currentUserId = ""
+    var currentUserId = -1
 
     var currentSortOrder: SortOrder = SortOrder.DEFAULT
     var onlyCompleted = true
@@ -259,7 +259,8 @@ class TaskModel: ViewModel() {
     // Aqui se guardan todas las listas del usuario que están en firebase
     var sharedLists = mutableListOf<TaskList>()
     // Filtramos por las listas que tiene el usuario o toDO por en las que está incluido
-    val sharedListsRef = database.getReference("lists").orderByChild("id").equalTo(currentUserId)
+    val sharedListsRef = database.getReference("lists").orderByChild("id").equalTo(currentUserId.toDouble())
+
     // Función para poder empezar a escuchar los cambios
     fun listenToSharedLists(updater: () -> Unit) {
         sharedListsRef.addValueEventListener(object: ValueEventListener {

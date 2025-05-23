@@ -10,12 +10,13 @@ import androidx.room.ColumnInfo
     indices = [Index(value = ["email"], unique = true)]
 )
 data class User(
-    @PrimaryKey val id: String,
+    @PrimaryKey(autoGenerate = true) val id: Int = 0,
     val name: String,
     val lastName: String,
     @ColumnInfo(name = "email") val email: String,
     val password: String,
 
     var avatar: Int,
+    var remoteId : String,
     var lastPage: Int = -1
 )

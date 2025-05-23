@@ -28,5 +28,5 @@ data class Task(
     var colorId: Int = 0
 ) {
     @Ignore var remoteId: String? = null  // Firebase
-    @Ignore var userIdCreated: String? = null
+    @Ignore var userIdCreated: Int? = null
 }

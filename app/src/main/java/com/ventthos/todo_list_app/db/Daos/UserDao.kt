@@ -18,7 +18,7 @@ interface UserDao {
     fun getAllUsers(): List<User>
 
     @Query("SELECT * FROM users WHERE id = :userId")
-    fun getUserById(userId: String): User?
+    fun getUserById(userId: Int): User?
 
     @Delete
     fun deleteUser(user: User)
@@ -27,7 +27,7 @@ interface UserDao {
     fun getUserByEmail(email: String): User?
 
     @Query("UPDATE users SET lastPage = :lastPage WHERE id = :userId")
-    fun updateLastPage(userId: String, lastPage: Int)
+    fun updateLastPage(userId: Int, lastPage: Int)
 
     @Update
     fun updateUser(user: User)

@@ -16,5 +16,5 @@ interface SessionDao {
     fun clearSession()
 
     @Query("UPDATE session SET currentPage = :page WHERE userId = :userId")
-    fun updateCurrentPageForUser(userId: String, page: Int)
+    fun updateCurrentPageForUser(userId: Int, page: Int)
 }

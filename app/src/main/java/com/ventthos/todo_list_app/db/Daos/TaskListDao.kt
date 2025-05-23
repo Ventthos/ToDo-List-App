@@ -11,7 +11,7 @@ import com.ventthos.todo_list_app.db.dataclasses.TaskList
 @Dao
 interface TaskListDao {
     @Query("SELECT * FROM list WHERE userId = :id")
-    fun getAllUsersList(id : String) : MutableList<TaskList>
+    fun getAllUsersList(id : Int) : MutableList<TaskList>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun addList(list: TaskList)
