@@ -80,6 +80,7 @@ class ListDialogFragment : DialogFragment(), IconPicker.IconPickerListener{
         fun onListEdited(id: Int, title: String, icon: Int, colorId: Int, editing: Boolean)
         fun onListDeleted(id: Int, title: String, icon: Int, colorId: Int, editing: Boolean)
         fun onSharedListEdited(id: String, title: String, icon: Int, colorId: Int, editing: Boolean, sharedUsersList: MutableList<UserFromSharedList>)
+        fun onSharedListDeleted(id: String)
     }
 
     private var listener: ListEditorListener? = null
@@ -106,7 +107,8 @@ class ListDialogFragment : DialogFragment(), IconPicker.IconPickerListener{
             listener?.onListEdited(id, title, currentIcon, color?.colorId?: basicColors.first().colorId, editing)
             return
         }
-        else if(deleting && sharedList){
+        else if(deleting){
+            listener?.onSharedListDeleted(remoteId)
             return
         }
         listener?.onSharedListEdited(remoteId, title, currentIcon, color?.colorId?: basicColors.first().colorId, editing, sharedUsers)

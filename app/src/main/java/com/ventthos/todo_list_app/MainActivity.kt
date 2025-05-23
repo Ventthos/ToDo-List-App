@@ -407,6 +407,12 @@ class MainActivity : AppCompatActivity(), TaskDialogFragment.TaskEditListener, L
         lists.child(id).setValue(editedList)
     }
 
+    override fun onSharedListDeleted(id: String) {
+        taskModel.deleteSharedList(id)
+        taskModel.currentPage = -1
+        runFilters()
+    }
+
     fun redrawLists(){
         val listsMenu = navigationView.menu.findItem(R.id.listMenuDisplay).subMenu
         listsMenu?.clear()

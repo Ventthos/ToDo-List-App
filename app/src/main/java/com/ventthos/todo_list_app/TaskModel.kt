@@ -228,6 +228,11 @@ class TaskModel: ViewModel() {
 
     }
 
+    fun deleteSharedList(id: String){
+        database.getReference("lists").child(id).removeValue()
+        getTasks()
+    }
+
     fun filterByList(recyclerView: RecyclerView, shared: Boolean = false){
         if(!shared){
             filteredTasks = tasks.filter { it.listId == currentPage }.toMutableList()
