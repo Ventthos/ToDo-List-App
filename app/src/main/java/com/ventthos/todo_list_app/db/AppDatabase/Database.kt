@@ -11,7 +11,7 @@ import com.ventthos.todo_list_app.db.dataclasses.TaskList
 import com.ventthos.todo_list_app.db.dataclasses.User
 import com.ventthos.todo_list_app.db.dataclasses.Session
 
-@Database(entities = [User::class, Task::class, TaskList::class, Session::class], version = 9)
+@Database(entities = [User::class, Task::class, TaskList::class, Session::class], version = 8)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun UserDao() : UserDao
     abstract fun TaskListDao() : TaskListDao
