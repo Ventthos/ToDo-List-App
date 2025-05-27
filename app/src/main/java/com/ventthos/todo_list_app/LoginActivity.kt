@@ -72,7 +72,12 @@ class LoginActivity : AppCompatActivity() {
                 return@setOnClickListener
             }
 
-            // Buscar usuario en Firebase por email
+            val db = AppDatabase.getDatabase(this)
+            val userDao = db.UserDao()
+            val sessionDao = db.sessionDao()
+            val database = FirebaseDatabase.getInstance()
+            val usersRef = database.getReference("users")
+
             usersRef.orderByChild("email").equalTo(email)
                 .addListenerForSingleValueEvent(object : ValueEventListener {
                     override fun onDataChange(snapshot: DataSnapshot) {
@@ -83,28 +88,34 @@ class LoginActivity : AppCompatActivity() {
                                     val remoteId = userSnap.key!!
                                     val name = userSnap.child("name").getValue(String::class.java) ?: ""
                                     val lastName = userSnap.child("lastName").getValue(String::class.java) ?: ""
-                                    val avatarName = userSnap.child("avatarName").getValue(String::class.java) ?: "mark"
+                                    val avatarName = userSnap.child("avatar").getValue(String::class.java) ?: "mark"
                                     val lastPage = userSnap.child("lastPage").getValue(Int::class.java) ?: 0
+                                    val localId = userSnap.child("localId").getValue(Int::class.java) ?: -1
                                     val avatarId = resources.getIdentifier(avatarName, "drawable", packageName)
-                                    val userId = userSnap.child("localId").getValue(Int::class.java) ?: -1
-                                    // Guardar usuario en Room y en sesión
+
                                     CoroutineScope(Dispatchers.IO).launch {
-                                        val user = User(
-                                            name = name,
-                                            lastName = lastName,
-                                            email = email,
-                                            password = password,
-                                            avatar = avatarId,
-                                            lastPage = lastPage,
-                                            remoteId = remoteId
-                                        )
+                                        // Si ya existe, evitamos duplicarlo
+                                        val existing = userDao.getUserById(localId)
+                                        if (existing == null) {
+                                            val newUser = User(
+                                                id = localId,
+                                                name = name,
+                                                lastName = lastName,
+                                                email = email,
+                                                password = password,
+                                                avatar = avatarId,
+                                                lastPage = lastPage,
+                                                remoteId = remoteId
+                                            )
+                                            userDao.insertUser(newUser)
+                                        }
 
                                         sessionDao.clearSession()
-                                        sessionDao.insertSession(Session(userId = userId))
+                                        sessionDao.insertSession(Session(userId = localId))
 
                                         runOnUiThread {
                                             startActivity(Intent(this@LoginActivity, MainActivity::class.java).apply {
-                                                putExtra("userId", userId)
+                                                putExtra("userId", localId)
                                             })
                                             finish()
                                         }

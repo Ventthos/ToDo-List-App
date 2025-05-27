@@ -138,14 +138,14 @@ class RegisterActivity : AppCompatActivity() {
             val avatarName = resources.getResourceEntryName(selectedAvatarResId)
 
             val firebaseUser = mapOf(
-                "id" to userId,  // ID local (por si lo necesitás después)
+                "id" to userId,
                 "name" to newUser.name,
                 "lastName" to newUser.lastName,
                 "email" to newUser.email,
                 "password" to newUser.password,
                 "avatar" to avatarName,
                 "lastPage" to newUser.lastPage,
-                "localId" to newUser.id
+                "localId" to userId // <- este sí es el correcto
             )
 
             usersRef.child(remoteUserId).setValue(firebaseUser)
