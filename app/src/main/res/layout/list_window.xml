@@ -105,13 +105,32 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="@string/usersInThisList"/>
+        <LinearLayout
+            android:id="@+id/addUserLayout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="8dp">
 
+            <EditText
+                android:id="@+id/emailToAdd"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:hint="Correo del usuario" />
+
+            <Button
+                android:id="@+id/addUserButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Agregar" />
+        </LinearLayout>
         <androidx.recyclerview.widget.RecyclerView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:minHeight="40dp"
             android:id="@+id/usersRecyclerView"/>
-
         <Button
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"

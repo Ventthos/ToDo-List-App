@@ -8,10 +8,12 @@ import android.os.Bundle
 import android.util.Log
 import android.view.View
 import android.widget.AdapterView
+import android.widget.Button
 import android.widget.EditText
 import android.widget.ImageButton
 import android.widget.LinearLayout
 import android.widget.Spinner
+import android.widget.TextView
 import android.widget.Toast
 import androidx.fragment.app.DialogFragment
 import androidx.transition.Visibility
@@ -23,6 +25,9 @@ class ListDialogFragment : DialogFragment(), IconPicker.IconPickerListener{
     lateinit var iconChangerButton: ImageButton
     lateinit var spinner: Spinner
     lateinit var usersLayout: LinearLayout
+    lateinit var emailToAdd: EditText
+    lateinit var addUserButton: Button
+    lateinit var rootDialogView: View
 
     private var id = -1
     private var editing = false
@@ -119,11 +124,56 @@ class ListDialogFragment : DialogFragment(), IconPicker.IconPickerListener{
             val builder = AlertDialog.Builder(it)
             val inflater = requireActivity().layoutInflater;
             val dialogView = inflater.inflate(R.layout.list_window, null)
+            rootDialogView = dialogView // ← ✅ así podés usarlo luego
 
             titleInput = dialogView.findViewById(R.id.titleInput)
             spinner = dialogView.findViewById(R.id.colorSpinner)
             iconChangerButton = dialogView.findViewById(R.id.iconChangerButton)
             usersLayout = dialogView.findViewById(R.id.usersContainer)
+            emailToAdd = dialogView.findViewById(R.id.emailToAdd)
+            addUserButton = dialogView.findViewById(R.id.addUserButton)
+            addUserButton.setOnClickListener {
+                val email = emailToAdd.text.toString().trim()
+                if (email.isEmpty()) {
+                    Toast.makeText(requireContext(), "Ingresa un correo", Toast.LENGTH_SHORT).show()
+                    return@setOnClickListener
+                }
+
+                val usersRef = com.google.firebase.database.FirebaseDatabase.getInstance().getReference("users")
+
+                usersRef.orderByChild("email").equalTo(email)
+                    .addListenerForSingleValueEvent(object : com.google.firebase.database.ValueEventListener {
+                        override fun onDataChange(snapshot: com.google.firebase.database.DataSnapshot) {
+                            if (snapshot.exists()) {
+                                for (userSnap in snapshot.children) {
+                                    val userId = userSnap.key ?: continue
+                                    val name = userSnap.child("name").getValue(String::class.java) ?: "Desconocido"
+                                    val lastname = userSnap.child("lastName").getValue(String::class.java) ?: "Desconocido"
+                                    val avatarName = userSnap.child("avatar").getValue(String::class.java) ?: "mark"
+                                    val avatarId = requireContext().resources.getIdentifier(avatarName, "drawable", requireContext().packageName)
+
+                                    val userToAdd = UserFromSharedList(userId, name,lastname, email=email, avatarId, "pendiente", avatarName=avatarName)
+
+                                    if (sharedUsers.any { it.remoteId == userId }) {
+                                        Toast.makeText(requireContext(), "Ese usuario ya está agregado", Toast.LENGTH_SHORT).show()
+                                        return
+                                    }
+
+                                    sharedUsers.add(userToAdd)
+                                    renderUserList()
+                                    emailToAdd.setText("")
+                                }
+                            } else {
+                                Toast.makeText(requireContext(), "Usuario no encontrado", Toast.LENGTH_SHORT).show()
+                            }
+                        }
+
+                        override fun onCancelled(error: com.google.firebase.database.DatabaseError) {
+                            Toast.makeText(requireContext(), "Error al buscar usuario", Toast.LENGTH_SHORT).show()
+                            Log.e("ListDialog", "Error Firebase", error.toException())
+                        }
+                    })
+            }
 
             // Bindings
             iconChangerButton.setOnClickListener {
@@ -249,4 +299,21 @@ class ListDialogFragment : DialogFragment(), IconPicker.IconPickerListener{
         outState.putSerializable(SHAREDUSERSTAG, ArrayList(sharedUsers))
         outState.putBoolean(SHAREDLISTTAG, sharedList)
     }
+
+    private fun renderUserList() {
+        val addUserLayout = rootDialogView.findViewById<View>(R.id.addUserLayout)
+        (usersLayout.parent as? LinearLayout)?.removeView(addUserLayout)
+
+        usersLayout.removeAllViews()
+
+        for (user in sharedUsers) {
+            val textView = TextView(requireContext())
+            textView.text = "${user.name} - ${user.lastName}"
+            textView.setPadding(16, 8, 16, 8)
+            usersLayout.addView(textView)
+        }
+        // Agregamos al final
+        usersLayout.addView(addUserLayout)
+    }
 }
+

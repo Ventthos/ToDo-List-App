@@ -6,6 +6,8 @@ data class UserFromSharedList(
     val remoteId: String,
     val name: String,
     val lastName: String,
+    val email:String,
     var avatar: Int,
-    var state: String
+    var state: String,
+    val avatarName: String = "mark"
 ): Serializable

@@ -55,31 +55,31 @@ class TaskModel: ViewModel() {
     // Declaración de la db
     val database = Firebase.database
 
-    fun getTasks(){
+    fun getTasks() {
         tasks.clear()
         val userListsId = lists.map { it.id }
         tasks.addAll(taskDao.getAllTasksFromUser(userListsId))
         taskAdapter.notifyDataSetChanged()
     }
 
-   fun createTask(title: String, notes: String, importance: Int, date: String?, listId: Int){
-       var finalDate = date
+    fun createTask(title: String, notes: String, importance: Int, date: String?, listId: Int) {
+        var finalDate = date
         if (date == "")
             finalDate = null
 
-       val colorId = lists.first { it.id == listId }.color
-       getTasks()
-       val newTask = Task(0, title, notes, importance, finalDate, false, listId, colorId)
+        val colorId = lists.first { it.id == listId }.color
+        getTasks()
+        val newTask = Task(0, title, notes, importance, finalDate, false, listId, colorId)
         taskDao.addTask(newTask)
 
-       getTasks()
+        getTasks()
         taskAdapter.notifyDataSetChanged()
-   }
+    }
 
 
-    fun editTask(id:Int, title: String, notes: String, importance: Int, date: String?) {
+    fun editTask(id: Int, title: String, notes: String, importance: Int, date: String?) {
         var finaldate = date
-        if (date == ""){
+        if (date == "") {
             finaldate = null
         }
         val task = taskDao.getTaskWithId(id)
@@ -96,93 +96,94 @@ class TaskModel: ViewModel() {
         taskAdapter.notifyDataSetChanged()
 
     }
-    fun deleteTask(id:Int, title: String, notes: String, importance: Int, date: String?) {
+
+    fun deleteTask(id: Int, title: String, notes: String, importance: Int, date: String?) {
 
         var finalDate = date
         if (date == "") {
             finalDate = null
         }
-        val TaskToDelete = Task(id,title,notes,importance,finalDate)
+        val TaskToDelete = Task(id, title, notes, importance, finalDate)
         taskDao.deleteTask(TaskToDelete)
 
         getTasks()
         taskAdapter.notifyDataSetChanged()
     }
 
-    fun deleteSharedTask(id: String): Boolean{
+    fun deleteSharedTask(id: String): Boolean {
         val list = sharedLists.firstOrNull { it.id == currentPage }
-        if(list == null) return false
+        if (list == null) return false
 
         database.getReference("lists").child(list.remoteId!!).child("tasks").child(id).removeValue()
         return true
     }
 
-    fun clearFilters(recyclerView: RecyclerView){
-        filteredTasks = tasks.filter {!it.completed }.toMutableList()
+    fun clearFilters(recyclerView: RecyclerView) {
+        filteredTasks = tasks.filter { !it.completed }.toMutableList()
         taskAdapter.updateList(filteredTasks, recyclerView)
     }
 
-    fun filtrateImportants(recyclerView: RecyclerView){
-        filteredTasks = tasks.filter { it.importance > 0 && !it.completed }.sortedByDescending { it.importance }.toMutableList()
+    fun filtrateImportants(recyclerView: RecyclerView) {
+        filteredTasks =
+            tasks.filter { it.importance > 0 && !it.completed }.sortedByDescending { it.importance }
+                .toMutableList()
         taskAdapter.updateList(filteredTasks, recyclerView)
 
     }
 
-    fun filtratePlanned(recyclerView: RecyclerView){
-        filteredTasks = tasks.filter { it.date !== null && !it.completed}.sortedBy { it.date }.toMutableList()
-        taskAdapter.updateList(filteredTasks,recyclerView)
-    }
-
-    fun filtrateCompleted(recyclerView: RecyclerView){
-        filteredTasks = tasks.filter {it.completed}.toMutableList()
+    fun filtratePlanned(recyclerView: RecyclerView) {
+        filteredTasks =
+            tasks.filter { it.date !== null && !it.completed }.sortedBy { it.date }.toMutableList()
         taskAdapter.updateList(filteredTasks, recyclerView)
     }
 
-    fun orderByImportance(descendingOrder: Boolean,recyclerView: RecyclerView){
-        Log.i("Filtered",filteredTasks.toString())
-        if (descendingOrder){
+    fun filtrateCompleted(recyclerView: RecyclerView) {
+        filteredTasks = tasks.filter { it.completed }.toMutableList()
+        taskAdapter.updateList(filteredTasks, recyclerView)
+    }
+
+    fun orderByImportance(descendingOrder: Boolean, recyclerView: RecyclerView) {
+        Log.i("Filtered", filteredTasks.toString())
+        if (descendingOrder) {
             filteredTasks.sortByDescending { it.importance }
             currentSortOrder = SortOrder.IMPORTANCE_DESC
-        }
-        else{
-            filteredTasks.sortBy{ it.importance }
+        } else {
+            filteredTasks.sortBy { it.importance }
             currentSortOrder = SortOrder.IMPORTANCE_ASC
         }
-        Log.i("Filtered",filteredTasks.toString())
+        Log.i("Filtered", filteredTasks.toString())
         taskAdapter.updateList(filteredTasks, recyclerView)
     }
 
-    fun orderByDate(descendingOrder: Boolean = true,recyclerView: RecyclerView){
-        if(descendingOrder){
-            Log.i("Filtered",filteredTasks.toString())
+    fun orderByDate(descendingOrder: Boolean = true, recyclerView: RecyclerView) {
+        if (descendingOrder) {
+            Log.i("Filtered", filteredTasks.toString())
             filteredTasks.sortByDescending { it.date }
             currentSortOrder = SortOrder.DATE_DESC
-        }
-        else{
-            filteredTasks.sortBy{ it.date }
+        } else {
+            filteredTasks.sortBy { it.date }
             currentSortOrder = SortOrder.DATE_ASC
         }
         taskAdapter.updateList(filteredTasks, recyclerView)
     }
 
-    fun setCompletedVisibility(hide: Boolean = true, recyclerView: RecyclerView){
+    fun setCompletedVisibility(hide: Boolean = true, recyclerView: RecyclerView) {
         var tasksVisibility = mutableListOf<Task>()
-        if(currentPage > 0){
-            tasksVisibility = filteredTasks.filter { it.listId == currentPage}.toMutableList()
-        }
-        else{
+        if (currentPage > 0) {
+            tasksVisibility = filteredTasks.filter { it.listId == currentPage }.toMutableList()
+        } else {
             val currentList = sharedLists.firstOrNull { it.id == currentPage }
-            if(currentList == null) return
+            if (currentList == null) return
             tasksVisibility = currentList.tasks!!.toMutableList()
         }
-        if(hide){
+        if (hide) {
             tasksVisibility = tasksVisibility.filter { !it.completed }.toMutableList()
         }
 
         taskAdapter.updateList(tasksVisibility, recyclerView)
     }
 
-    fun changeCompleted(id:Int, completed: Boolean){
+    fun changeCompleted(id: Int, completed: Boolean) {
         val task = tasks.first { it.id == id }
         task.completed = completed
         //agregar completa
@@ -190,54 +191,61 @@ class TaskModel: ViewModel() {
         taskAdapter.notifyDataSetChanged()
     }
 
-    fun changeCompletedShared(id: String, completed: Boolean): Boolean{
+    fun changeCompletedShared(id: String, completed: Boolean): Boolean {
         val list = sharedLists.firstOrNull { it.id == currentPage }
-        if(list == null) return false
+        if (list == null) return false
 
-        var stateRef = database.getReference("lists").child(list.remoteId!!).child("tasks").child(id).child("completed")
+        var stateRef =
+            database.getReference("lists").child(list.remoteId!!).child("tasks").child(id)
+                .child("completed")
         stateRef.setValue(completed)
         taskAdapter.notifyDataSetChanged()
         return true
     }
 
-    fun changeDateLimit(id: Int, date:String){
+    fun changeDateLimit(id: Int, date: String) {
         taskDao.updateTaskLimit(id, date)
         getTasks()
         taskAdapter.notifyDataSetChanged()
     }
 
-    fun changeDataLimitForShared(id: String, date: String){
+    fun changeDataLimitForShared(id: String, date: String) {
         val list = sharedLists.firstOrNull { it.id == currentPage }
-        if(list == null) return
-        var stateRef = database.getReference("lists").child(list.remoteId!!).child("tasks").child(id).child("date")
+        if (list == null) return
+        var stateRef =
+            database.getReference("lists").child(list.remoteId!!).child("tasks").child(id)
+                .child("date")
 
-        val finalDate = if(date != "") date else null
+        val finalDate = if (date != "") date else null
         stateRef.setValue(finalDate)
     }
 
-    fun removeImportanceForShared(id: String){
+    fun removeImportanceForShared(id: String) {
         val list = sharedLists.firstOrNull { it.id == currentPage }
-        if(list == null) return
-        var stateRef = database.getReference("lists").child(list.remoteId!!).child("tasks").child(id).child("importance")
+        if (list == null) return
+        var stateRef =
+            database.getReference("lists").child(list.remoteId!!).child("tasks").child(id)
+                .child("importance")
         stateRef.setValue(null)
     }
 
-    fun getListFromDb(context: Context){
+    fun getListFromDb(context: Context) {
         lists.clear()
         lists.addAll(listDao.getAllUsersList(currentUserId))
-        for (list in lists){
-            val photoId = context.resources.getIdentifier(list.iconName, "drawable", context.packageName)
+        for (list in lists) {
+            val photoId =
+                context.resources.getIdentifier(list.iconName, "drawable", context.packageName)
             list.iconId = photoId
         }
     }
 
-    fun createList(title: String, icon: Int, colorId: Int, context: Context){
+    fun createList(title: String, icon: Int, colorId: Int, context: Context) {
         val resourceName: String = context.resources.getResourceEntryName(icon)
         val newTask = TaskList(0, title, colorId, resourceName, icon, currentUserId)
         listDao.addList(newTask)
     }
 
-    fun editList(id: Int, name: String, icon: Int, colorId: Int, context: Context){
+    fun editList(id: Int, name: String, icon: Int, colorId: Int, context: Context) {
         val resourceName: String = context.resources.getResourceEntryName(icon)
         val updatedList = TaskList(id, name, colorId, resourceName, icon, currentUserId)
         listDao.updateList(updatedList)
@@ -245,7 +253,7 @@ class TaskModel: ViewModel() {
         getTasks()
     }
 
-    fun deleteList(id: Int, name: String, icon: Int, colorId: Int, context: Context){
+    fun deleteList(id: Int, name: String, icon: Int, colorId: Int, context: Context) {
 
         val resourceName: String = context.resources.getResourceEntryName(icon)
         val ListToDelete = TaskList(id, name, colorId, resourceName, icon, currentUserId)
@@ -254,26 +262,25 @@ class TaskModel: ViewModel() {
 
     }
 
-    fun deleteSharedList(id: String){
+    fun deleteSharedList(id: String) {
         database.getReference("lists").child(id).removeValue()
         getTasks()
     }
 
-    fun filterByList(recyclerView: RecyclerView, shared: Boolean = false){
-        if(!shared){
+    fun filterByList(recyclerView: RecyclerView, shared: Boolean = false) {
+        if (!shared) {
             filteredTasks = tasks.filter { it.listId == currentPage }.toMutableList()
             taskAdapter.updateList(filteredTasks, recyclerView)
             return
         }
-        val sharedTasks = sharedLists.firstOrNull { it.id == currentPage}?.tasks
+        val sharedTasks = sharedLists.firstOrNull { it.id == currentPage }?.tasks
 
-        if(sharedTasks != null){
+        if (sharedTasks != null) {
             filteredTasks = sharedTasks
             taskAdapter.updateList(filteredTasks, recyclerView)
             Log.i("YEA", filteredTasks.toString())
             return
-        }
-        else{
+        } else {
             currentPage = 0
             Log.i("ÑAO", "no se pudo encontrar")
         }
@@ -284,57 +291,71 @@ class TaskModel: ViewModel() {
 
     // Aqui se guardan todas las listas del usuario que están en firebase
     var sharedLists = mutableListOf<TaskList>()
+
     // Filtramos por las listas que tiene el usuario o toDO por en las que está incluido
-    var sharedListsRef = database.getReference("lists").orderByChild("userId").equalTo(currentUserId.toDouble())
+    var sharedListsRef =
+        database.getReference("lists").orderByChild("userId").equalTo(currentUserId.toDouble())
 
     // Función para poder empezar a escuchar los cambios
     fun listenToSharedLists(updater: () -> Unit) {
-        sharedListsRef.addValueEventListener(object: ValueEventListener {
-            override fun onDataChange(snapshot: DataSnapshot) {
-                // Obtenemos cada una de los list lo mapeamos en un id local por problemas con
-                // lo de que el drawer solo puede aceptar numeros
-                Log.i("Pidiendo con" , currentUserId.toDouble().toString())
-                sharedLists.clear()
-                for (childSnapshot in snapshot.children) {
-                    val firebaseId = childSnapshot.key
-                    val firebaseTaskList = childSnapshot.getValue(TaskListFirebase::class.java)
+        val user = userDao.getUserById(currentUserId)
+        val userEmail = user?.email ?: return
 
-                    if (firebaseId != null && firebaseTaskList != null) {
-                        val hashcode = firebaseId.hashCode()
-                        val fullTaskList = TaskList(
-                            id = if (hashcode < 0) hashcode else -hashcode,
-                            name = firebaseTaskList.name,
-                            color = firebaseTaskList.color,
-                            iconName = firebaseTaskList.iconName,
-                            iconId = firebaseTaskList.iconId,
-                            userId = firebaseTaskList.userId,
-                        )
+        database.getReference("lists")
+            .addValueEventListener(object : ValueEventListener {
+                override fun onDataChange(snapshot: DataSnapshot) {
+                    sharedLists.clear()
 
-                        fullTaskList.remoteId = firebaseId
+                    for (listSnap in snapshot.children) {
+                        val listData = listSnap.getValue(TaskListFirebase::class.java)
+                        val remoteId = listSnap.key ?: continue
 
-                        // Cargar tareas manualmente
-                        val tasks = mutableListOf<Task>()
-                        val tasksSnapshot = childSnapshot.child("tasks")
-                        for (taskSnap in tasksSnapshot.children) {
-                            val task = taskSnap.getValue(Task::class.java)
-                            if (task != null) {
-                                task.remoteId = taskSnap.key
-                                tasks.add(task)
+                        // Verificamos si es dueño o si está en sharedUsers
+                        val isOwner = listData?.userId == currentUserId
+                        val sharedUsersSnap = listSnap.child("sharedUsers")
+                        var isInvited = false
+
+                        for (userSnap in sharedUsersSnap.children) {
+                            val email = userSnap.child("email").getValue(String::class.java)
+                            if (email == userEmail) {
+                                isInvited = true
+                                break
                             }
                         }
-                        fullTaskList.tasks = tasks
 
-                        sharedLists.add(fullTaskList)
+                        if (isOwner || isInvited) {
+                            val list = TaskList(
+                                id = remoteId.hashCode().let { if (it < 0) -it else it },
+                                name = listData?.name ?: "",
+                                color = listData?.color ?: 0,
+                                iconName = listData?.iconName ?: "time",
+                                iconId = listData?.iconId ?: R.drawable.time,
+                                userId = listData?.userId ?: -1
+                            )
+
+                            list.remoteId = remoteId
+
+                            // cargar tasks también
+                            val tasks = mutableListOf<Task>()
+                            val taskSnap = listSnap.child("tasks")
+                            for (t in taskSnap.children) {
+                                val task = t.getValue(Task::class.java)
+                                task?.remoteId = t.key
+                                if (task != null) tasks.add(task)
+                            }
+                            list.tasks = tasks
+
+                            sharedLists.add(list)
+                        }
                     }
+
+                    updater()
                 }
 
-                updater() // llamada al callback, que es el actualizador de datos
-            }
-
-            override fun onCancelled(error: DatabaseError) {
-                Log.w(TAG, "Failed to read value.", error.toException())
-            }
-        })
+                override fun onCancelled(error: DatabaseError) {
+                    Log.w("Firebase", "Error al leer listas compartidas", error.toException())
+                }
+            })
     }
 
 }
