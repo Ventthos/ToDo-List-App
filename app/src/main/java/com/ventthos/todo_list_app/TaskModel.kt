@@ -69,6 +69,8 @@ class TaskModel: ViewModel() {
         if (date == "")
             finalDate = null
 
+        Log.i("Trato de buscar la lista", listId.toString())
+        Log.i("Pero tengo", lists.toString())
         val colorId = lists.first { it.id == listId }.color
         getTasks()
         val newTask = Task(0, title, notes, importance, finalDate, false, listId, colorId)

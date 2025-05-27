@@ -1,5 +1,6 @@
 package com.ventthos.todo_list_app
 
+import android.content.ClipData
 import android.os.Bundle
 import android.util.Log
 import android.view.ContextMenu
@@ -298,9 +299,14 @@ class MainActivity : AppCompatActivity(), TaskDialogFragment.TaskEditListener, L
         }
         else if((taskModel.currentPage >= 0 || taskModel.currentPage < -4) && !toolbar.menu.hasVisibleItems()){
             for (i in 0 until toolbar.menu.size()) {
-                toolbar.menu.getItem(i).isVisible = true
+                val menuItem = toolbar.menu.getItem(i)
+                menuItem.isVisible = true
             }
+
             fab.visibility = View.VISIBLE
+            if(taskModel.currentPage < -4){
+                
+            }
         }
 
     }
@@ -319,7 +325,7 @@ class MainActivity : AppCompatActivity(), TaskDialogFragment.TaskEditListener, L
             taskModel.getListFromDb(this)
             redrawLists()
             if(!editing){
-                taskModel.createTask(title, notes, importance, date, taskModel.currentUserId)
+                taskModel.createTask(title, notes, importance, date, taskModel.currentPage)
                 runFilters()
                 return
             }
