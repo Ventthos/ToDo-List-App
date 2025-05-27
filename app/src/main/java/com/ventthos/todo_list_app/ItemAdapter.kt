@@ -6,11 +6,13 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.CheckBox
+import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.cardview.widget.CardView
 import androidx.recyclerview.widget.RecyclerView
+import com.google.firebase.database.DatabaseReference
 import com.ventthos.todo_list_app.db.dataclasses.Task
 import java.text.SimpleDateFormat
 import java.util.*
@@ -25,6 +27,7 @@ class ItemAdapter(
 ) : RecyclerView.Adapter<ItemAdapter.ItemViewHolder>() {
 
     lateinit var inflater: LayoutInflater
+    lateinit var usersReference: DatabaseReference
 
     class ItemViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         val title: TextView = view.findViewById(R.id.task_title)
@@ -35,8 +38,9 @@ class ItemAdapter(
         val infoContainer: LinearLayout = view.findViewById(R.id.infoContainer)
         val checkBoxContainer: LinearLayout = view.findViewById(R.id.checkContainer)
         val cardRoot: CardView = view.findViewById(R.id.taskRoot)
-
-
+        val sharedUserDisplay: LinearLayout = view.findViewById(R.id.sharedListUserDisplay)
+        val sharedUserNameDisplay: TextView = view.findViewById(R.id.sharedListUserNameDisplay)
+        val sharedUserIconDisplay: ImageView = view.findViewById(R.id.sharedListUserIconDisplay)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ItemViewHolder {
@@ -96,6 +100,16 @@ class ItemAdapter(
             holder.dateContainer.visibility = View.GONE
         }
 
+        // Mostrar los datos del shared
+        if(item.emailCreated != null){
+            holder.sharedUserDisplay.visibility = View.VISIBLE
+            holder.sharedUserIconDisplay.setImageResource(item.iconCreated ?: R.drawable.mark)
+            holder.sharedUserNameDisplay.text = item.nameCreated
+        }
+        else{
+            holder.sharedUserDisplay.visibility = View.GONE
+        }
+
         // Color settings
         val color = if(!vencida) basicColors[item.colorId] else grayColor
         val mainColor = Color.parseColor(color.hexHash)
@@ -124,5 +138,9 @@ class ItemAdapter(
         recyclerView.post {
             notifyDataSetChanged()
         }
+    }
+
+    fun setFireBaseReference(usersReference: DatabaseReference){
+        this.usersReference = usersReference
     }
 }

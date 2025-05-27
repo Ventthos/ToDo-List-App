@@ -102,6 +102,8 @@ class MainActivity : AppCompatActivity(), TaskDialogFragment.TaskEditListener, L
         if (userId != -1) {
             taskModel.currentUserId = userId
             val currentUser = taskModel.userDao.getUserById(userId)
+            taskModel.currentUserEmail = currentUser?.email ?: ""
+            taskModel.currentUserImage = currentUser?.avatar ?: R.drawable.mark
             taskModel.sharedListsRef = taskModel.database.getReference("lists").orderByChild("userId").equalTo(taskModel.currentUserId.toDouble())
             taskModel.currentPage = currentUser?.lastPage ?: -1 // Se restaura el lastPage
             if (savedInstanceState != null) {
@@ -317,7 +319,7 @@ class MainActivity : AppCompatActivity(), TaskDialogFragment.TaskEditListener, L
             taskModel.getListFromDb(this)
             redrawLists()
             if(!editing){
-                taskModel.createTask(title, notes, importance, date, taskModel.currentPage)
+                taskModel.createTask(title, notes, importance, date, taskModel.currentUserId)
                 runFilters()
                 return
             }
@@ -339,8 +341,9 @@ class MainActivity : AppCompatActivity(), TaskDialogFragment.TaskEditListener, L
         val taskListRef = taskModel.database.getReference("lists").child(list.remoteId!!).child("tasks")
         // Creamos la task que va a subirse
         val newTask = Task(-1, title, notes, importance, date, colorId = list.color )
-        newTask.userIdCreated = taskModel.currentUserId
-
+        newTask.emailCreated = taskModel.currentUserEmail
+        newTask.iconCreated = taskModel.currentUserImage
+        newTask.nameCreated = navigationView.getHeaderView(0).findViewById<TextView>(R.id.nav_header_name).text.toString()
         if(editing){
             taskListRef.child(remoteId!!).setValue(newTask)
             return
@@ -383,6 +386,7 @@ class MainActivity : AppCompatActivity(), TaskDialogFragment.TaskEditListener, L
         val lists = taskModel.database.getReference("lists")
         val editedList = TaskList(-1, title, colorId, "", icon, taskModel.currentUserId)
         editedList.sharedUsers = sharedUsersList
+        editedList.userEmail = taskModel.currentUserEmail
 
         if(!editing){
             lists.push().setValue(editedList)

@@ -8,4 +8,5 @@ data class TaskListFirebase(
     var iconName: String = "",
     var iconId: Int = 0,
     var userId: Int = -1,
+    var userEmail: String = ""
 )

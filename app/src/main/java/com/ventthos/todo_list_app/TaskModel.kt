@@ -31,6 +31,8 @@ enum class SortOrder {
 class TaskModel: ViewModel() {
 
     var currentUserId = -1
+    var currentUserEmail = ""
+    var currentUserImage = -4
 
     var currentSortOrder: SortOrder = SortOrder.DEFAULT
     var onlyCompleted = true
@@ -311,7 +313,7 @@ class TaskModel: ViewModel() {
                         val remoteId = listSnap.key ?: continue
 
                         // Verificamos si es dueño o si está en sharedUsers
-                        val isOwner = listData?.userId == currentUserId
+                        val isOwner = listData?.userEmail == currentUserEmail
                         val sharedUsersSnap = listSnap.child("sharedUsers")
                         var isInvited = false
 
@@ -325,14 +327,13 @@ class TaskModel: ViewModel() {
 
                         if (isOwner || isInvited) {
                             val list = TaskList(
-                                id = remoteId.hashCode().let { if (it < 0) -it else it },
+                                id = remoteId.hashCode().let { if (it < 0) it else -it },
                                 name = listData?.name ?: "",
                                 color = listData?.color ?: 0,
                                 iconName = listData?.iconName ?: "time",
                                 iconId = listData?.iconId ?: R.drawable.time,
                                 userId = listData?.userId ?: -1
                             )
-
                             list.remoteId = remoteId
 
                             // cargar tasks también

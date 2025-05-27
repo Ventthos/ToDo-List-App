@@ -27,6 +27,16 @@
                         android:id="@+id/order_by_date_ascending_menu"/>
                 </menu>
             </item>
+            <item android:title="@string/byTime">
+                <menu>
+                    <item android:title="@string/descending"
+                        app:showAsAction="ifRoom"
+                        android:id="@+id/order_by_user_descending_menu"/>
+                    <item android:title="@string/ascending"
+                        app:showAsAction="ifRoom"
+                        android:id="@+id/order_by_user_ascending_menu"/>
+                </menu>
+            </item>
         </menu>
     </item>
 

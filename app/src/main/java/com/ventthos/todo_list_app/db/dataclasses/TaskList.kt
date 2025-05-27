@@ -26,6 +26,7 @@ data class TaskList(
 )
 {
     // Firebase cosas
+    @Ignore var userEmail: String? = null
     @Ignore var remoteId: String? = null
     @Ignore var sharedUsers: MutableList<UserFromSharedList>? = null
     @Ignore var tasks: MutableList<Task>? = null
