@@ -15,7 +15,7 @@ data class User(
     val lastName: String,
     @ColumnInfo(name = "email") val email: String,
     val password: String,
-
+    var remoteId: String = "",
     var avatar: Int,
     var lastPage: Int = -1
 )

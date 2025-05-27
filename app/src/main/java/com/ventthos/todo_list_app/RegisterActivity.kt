@@ -17,6 +17,8 @@ import com.ventthos.todo_list_app.db.dataclasses.User
 import com.google.android.gms.auth.api.signin.*
 import com.google.android.gms.common.SignInButton
 import com.google.android.gms.common.api.ApiException
+import com.google.firebase.database.ktx.database
+import com.google.firebase.ktx.Firebase
 import com.ventthos.todo_list_app.db.dataclasses.TaskList
 
 class RegisterActivity : AppCompatActivity() {
@@ -119,15 +121,34 @@ class RegisterActivity : AppCompatActivity() {
                 return@setOnClickListener
             }
 
+            val database = Firebase.database
+            val usersRef = database.getReference("users")
+            val remoteUserId = usersRef.push().key!!
+
             val newUser = User(
                 name = name,
                 lastName = lastName,
                 email = email,
                 password = password,
-                avatar = selectedAvatarResId
+                avatar = selectedAvatarResId,
+                remoteId = remoteUserId
             )
 
             val userId = userDao.insertUser(newUser).toInt()
+            val avatarName = resources.getResourceEntryName(selectedAvatarResId)
+
+            val firebaseUser = mapOf(
+                "id" to userId,  // ID local (por si lo necesitás después)
+                "name" to newUser.name,
+                "lastName" to newUser.lastName,
+                "email" to newUser.email,
+                "password" to newUser.password,
+                "avatar" to avatarName,
+                "lastPage" to newUser.lastPage,
+                "localId" to newUser.id
+            )
+
+            usersRef.child(remoteUserId).setValue(firebaseUser)
 
             val taskListDao = db.TaskListDao()
    

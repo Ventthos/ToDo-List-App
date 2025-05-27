@@ -3,7 +3,7 @@ package com.ventthos.todo_list_app.db.dataclasses
 import java.io.Serializable
 
 data class UserFromSharedList(
-    val remoteId: Int,
+    val remoteId: String,
     val name: String,
     val lastName: String,
     var avatar: Int,
