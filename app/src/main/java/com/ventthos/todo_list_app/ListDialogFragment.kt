@@ -352,20 +352,50 @@ class ListDialogFragment : DialogFragment(), IconPicker.IconPickerListener{
                 orientation = LinearLayout.HORIZONTAL
                 setPadding(16, 8, 16, 8)
             }
-
-            val textView = TextView(requireContext()).apply {
-                text = "${user.name} ${user.lastName}"
-                layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
+            val status = user.state.lowercase()
+            val statusColor = when (status) {
+                "aceptado" -> android.graphics.Color.parseColor("#4CAF50") // verde
+                "pendiente" -> android.graphics.Color.parseColor("#FFC107") // ámbar
+                else -> android.graphics.Color.GRAY
             }
+            val textView = TextView(requireContext()).apply {
+                text = "${user.name} ${user.lastName} - ${status}"
+                layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
+                setTextColor(statusColor)
+            }
+
 
             val deleteButton = ImageButton(requireContext()).apply {
                 setImageResource(android.R.drawable.ic_menu_delete)
                 setBackgroundColor(android.graphics.Color.TRANSPARENT)
                 setOnClickListener {
-                    sharedUsers.removeAt(index)
-                    renderUserList()
+                    AlertDialog.Builder(requireContext())
+                        .setTitle("Eliminar usuario")
+                        .setMessage("¿Seguro que deseas eliminar a ${user.name} ${user.lastName} de la lista?")
+                        .setPositiveButton("Eliminar") { _, _ ->
+                            val removedUser = sharedUsers.removeAt(index)
+                            renderUserList()
+
+                            // Eliminar también de Firebase si la lista es compartida
+                            if (sharedList && remoteId.isNotEmpty()) {
+                                val userRef = com.google.firebase.database.FirebaseDatabase.getInstance()
+                                    .getReference("lists")
+                                    .child(remoteId)
+                                    .child("sharedUsers")
+                                    .child(removedUser.remoteId)
+
+                                userRef.removeValue().addOnSuccessListener {
+                                    Log.d("ListDialog", "Usuario eliminado de Firebase")
+                                }.addOnFailureListener {
+                                    Log.e("ListDialog", "Error al eliminar usuario de Firebase", it)
+                                }
+                            }
+                        }
+                        .setNegativeButton("Cancelar", null)
+                        .show()
                 }
             }
+
 
             userLayout.addView(textView)
             userLayout.addView(deleteButton)
