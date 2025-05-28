@@ -297,16 +297,22 @@ class MainActivity : AppCompatActivity(), TaskDialogFragment.TaskEditListener, L
             fab.visibility = View.GONE
             return
         }
-        else if((taskModel.currentPage >= 0 || taskModel.currentPage < -4) && !toolbar.menu.hasVisibleItems()){
+        else if((taskModel.currentPage >= 0 || taskModel.currentPage < -4) ){
             for (i in 0 until toolbar.menu.size()) {
                 val menuItem = toolbar.menu.getItem(i)
                 menuItem.isVisible = true
+                Log.i("El item del menu es", menuItem.title.toString())
+                if(taskModel.currentPage >= 0 && menuItem.title == getString(R.string.ordenateList)){
+                    menuItem.subMenu?.getItem(2)?.setVisible(false)
+                    continue
+                }
+                else if(taskModel.currentPage < -4 && menuItem.title == getString(R.string.ordenateList)){
+                    menuItem.subMenu?.getItem(2)?.setVisible(true)
+                }
+
             }
 
             fab.visibility = View.VISIBLE
-            if(taskModel.currentPage < -4){
-                
-            }
         }
 
     }
@@ -531,6 +537,16 @@ class MainActivity : AppCompatActivity(), TaskDialogFragment.TaskEditListener, L
             runOrder(taskModel.currentSortOrder)
             true
         }
+        R.id.order_by_user_ascending_menu ->{
+            taskModel.currentSortOrder = SortOrder.USER_ASC
+            runOrder(taskModel.currentSortOrder)
+            true
+        }
+        R.id.order_by_user_descending_menu -> {
+            taskModel.currentSortOrder = SortOrder.USER_DESC
+            runOrder(taskModel.currentSortOrder)
+            true
+        }
         R.id.show_completed_menu->{
             taskModel.onlyCompleted = !taskModel.onlyCompleted
             taskModel.setCompletedVisibility(taskModel.onlyCompleted, recyclerView)
@@ -546,6 +562,8 @@ class MainActivity : AppCompatActivity(), TaskDialogFragment.TaskEditListener, L
             SortOrder.IMPORTANCE_ASC -> taskModel.orderByImportance(false, recyclerView)
             SortOrder.DATE_DESC -> taskModel.orderByDate(true, recyclerView)
             SortOrder.DATE_ASC ->  taskModel.orderByDate(false, recyclerView)
+            SortOrder.USER_DESC -> taskModel.orderByUser(true, recyclerView)
+            SortOrder.USER_ASC -> taskModel.orderByUser(false, recyclerView)
             SortOrder.DEFAULT -> {}
         }
         taskModel.setCompletedVisibility(taskModel.onlyCompleted, recyclerView)

@@ -27,8 +27,8 @@
                         android:id="@+id/order_by_date_ascending_menu"/>
                 </menu>
             </item>
-            <item android:title="@string/orderByUser" android:id="@+id/orderByUserMenu">
-                <menu>
+            <item android:title="@string/orderByUser" >
+                <menu android:id="@+id/orderByUserMenu">
                     <item android:title="@string/descending"
                         app:showAsAction="ifRoom"
                         android:id="@+id/order_by_user_descending_menu"/>

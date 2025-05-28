@@ -25,7 +25,9 @@ enum class SortOrder {
     IMPORTANCE_ASC,
     IMPORTANCE_DESC,
     DATE_ASC,
-    DATE_DESC
+    DATE_DESC,
+    USER_ASC,
+    USER_DESC
 }
 
 class TaskModel: ViewModel() {
@@ -167,6 +169,18 @@ class TaskModel: ViewModel() {
         } else {
             filteredTasks.sortBy { it.date }
             currentSortOrder = SortOrder.DATE_ASC
+        }
+        taskAdapter.updateList(filteredTasks, recyclerView)
+    }
+
+    fun orderByUser(descendingOrder: Boolean = true, recyclerView: RecyclerView){
+        if (descendingOrder) {
+            Log.i("Filtered", filteredTasks.toString())
+            filteredTasks.sortByDescending { it.nameCreated }
+            currentSortOrder = SortOrder.USER_DESC
+        } else {
+            filteredTasks.sortBy { it.nameCreated }
+            currentSortOrder = SortOrder.USER_ASC
         }
         taskAdapter.updateList(filteredTasks, recyclerView)
     }
