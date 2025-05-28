@@ -400,29 +400,40 @@ class MainActivity : AppCompatActivity(), TaskDialogFragment.TaskEditListener, L
         editedList.sharedUsers = sharedUsersList
         editedList.userEmail = taskModel.currentUserEmail
 
-        if(!editing){
+        if (!editing) {
             lists.push().setValue(editedList)
             return
         }
-        // Tenemos que igual ponerle las tasks, ya que si no, las pierde
-        val sharedList = taskModel.sharedLists.firstOrNull{it.id == taskModel.currentPage}
 
-        // Por si la borran mientras editan
-        if(sharedList == null) {
-            Toast.makeText(this, "La lista que se quería editar ya no existe", Toast.LENGTH_SHORT)
-                .show()
+        val sharedList = taskModel.sharedLists.firstOrNull { it.id == taskModel.currentPage }
+
+        if (sharedList == null || sharedList.tasks == null) {
+            Toast.makeText(this, "No se encontró la lista o las tareas", Toast.LENGTH_SHORT).show()
             return
         }
 
-        // Esto es para actualizar el color de las tareas
-        val updatedColorTask = sharedList.tasks!!.map { task->
-            task.copy(colorId = colorId)
+        // Mapa para actualizaciones parciales de colorId en cada tarea
+        val taskColorUpdates = mutableMapOf<String, Any>()
+        for (task in sharedList.tasks!!) {
+            val taskId = task.remoteId ?: continue
+            // Construimos la ruta relativa y asignamos el nuevo color
+            taskColorUpdates["${sharedList.remoteId}/tasks/$taskId/colorId"] = colorId
         }
-        // las tengo que actualizar obvio
-        editedList.tasks = updatedColorTask.toMutableList()
 
-        lists.child(id).setValue(editedList)
+        // Actualizar los campos básicos de la lista
+        val updates = mutableMapOf<String, Any>(
+            "name" to title,
+            "iconId" to icon,
+            "color" to colorId,
+            "sharedUsers" to sharedUsersList
+        )
+
+        lists.child(id).updateChildren(updates)
+
+        // Actualizar el colorId de las tareas
+        lists.updateChildren(taskColorUpdates)
     }
+
 
     override fun onSharedListDeleted(id: String) {
         taskModel.deleteSharedList(id)
