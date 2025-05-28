@@ -173,6 +173,46 @@ class ListDialogFragment : DialogFragment(), IconPicker.IconPickerListener{
                             Log.e("ListDialog", "Error Firebase", error.toException())
                         }
                     })
+                if (sharedList && remoteId.isNotEmpty()) {
+                    val listRef = com.google.firebase.database.FirebaseDatabase.getInstance()
+                        .getReference("lists").child(remoteId).child("sharedUsers")
+
+                    listRef.addListenerForSingleValueEvent(object : com.google.firebase.database.ValueEventListener {
+                        override fun onDataChange(snapshot: com.google.firebase.database.DataSnapshot) {
+                            sharedUsers.clear()
+                            for (userSnap in snapshot.children) {
+                                val userId = userSnap.key ?: continue
+                                val name = userSnap.child("name").getValue(String::class.java) ?: "Desconocido"
+                                val lastName = userSnap.child("lastName").getValue(String::class.java) ?: ""
+                                val email = userSnap.child("email").getValue(String::class.java) ?: ""
+                                val status = userSnap.child("status").getValue(String::class.java) ?: "pendiente"
+                                val avatarName = userSnap.child("avatarName").getValue(String::class.java) ?: "mark"
+                                val avatarId = requireContext().resources.getIdentifier(
+                                    avatarName, "drawable", requireContext().packageName
+                                )
+
+                                val user = UserFromSharedList(
+                                    remoteId = userId,
+                                    name = name,
+                                    lastName = lastName,
+                                    email = email,
+                                    avatar = avatarId,
+                                    state = status,
+                                    avatarName = avatarName
+                                )
+
+                                sharedUsers.add(user)
+                            }
+
+                            // ¡Ahora sí! Mostramos los usuarios recuperados en pantalla
+                            renderUserList()
+                        }
+
+                        override fun onCancelled(error: com.google.firebase.database.DatabaseError) {
+                            Log.e("ListDialog", "Error al cargar usuarios compartidos", error.toException())
+                        }
+                    })
+                }
             }
 
             // Bindings
@@ -211,6 +251,7 @@ class ListDialogFragment : DialogFragment(), IconPicker.IconPickerListener{
                         remoteId = arguments?.getString("REMOTEID", "")?:""
                         sharedUsers = arguments?.getSerializable("SHAREDUSERS") as? ArrayList<UserFromSharedList> ?: arrayListOf()
                         sharedList = remoteId != ""
+                        cargarUsuariosCompartidosDesdeFirebase()
                     }
                     // Y si no significa que están creando una lista compartida y que se debe mostrar
                     // la lista de usuarios
@@ -306,14 +347,73 @@ class ListDialogFragment : DialogFragment(), IconPicker.IconPickerListener{
 
         usersLayout.removeAllViews()
 
-        for (user in sharedUsers) {
-            val textView = TextView(requireContext())
-            textView.text = "${user.name} - ${user.lastName}"
-            textView.setPadding(16, 8, 16, 8)
-            usersLayout.addView(textView)
+        for ((index, user) in sharedUsers.withIndex()) {
+            val userLayout = LinearLayout(requireContext()).apply {
+                orientation = LinearLayout.HORIZONTAL
+                setPadding(16, 8, 16, 8)
+            }
+
+            val textView = TextView(requireContext()).apply {
+                text = "${user.name} ${user.lastName}"
+                layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
+            }
+
+            val deleteButton = ImageButton(requireContext()).apply {
+                setImageResource(android.R.drawable.ic_menu_delete)
+                setBackgroundColor(android.graphics.Color.TRANSPARENT)
+                setOnClickListener {
+                    sharedUsers.removeAt(index)
+                    renderUserList()
+                }
+            }
+
+            userLayout.addView(textView)
+            userLayout.addView(deleteButton)
+            usersLayout.addView(userLayout)
         }
-        // Agregamos al final
+
+        // Agregamos de nuevo el layout para ingresar email
         usersLayout.addView(addUserLayout)
     }
+    private fun cargarUsuariosCompartidosDesdeFirebase() {
+        if (sharedList && remoteId.isNotEmpty()) {
+            val listRef = com.google.firebase.database.FirebaseDatabase.getInstance()
+                .getReference("lists").child(remoteId).child("sharedUsers")
+
+            listRef.addListenerForSingleValueEvent(object : com.google.firebase.database.ValueEventListener {
+                override fun onDataChange(snapshot: com.google.firebase.database.DataSnapshot) {
+                    sharedUsers.clear()
+                    for (userSnap in snapshot.children) {
+                        val userId = userSnap.key ?: continue
+                        val name = userSnap.child("name").getValue(String::class.java) ?: "Desconocido"
+                        val lastName = userSnap.child("lastName").getValue(String::class.java) ?: ""
+                        val email = userSnap.child("email").getValue(String::class.java) ?: ""
+                        val status = userSnap.child("status").getValue(String::class.java) ?: "pendiente"
+                        val avatarName = userSnap.child("avatarName").getValue(String::class.java) ?: "mark"
+                        val avatarId = requireContext().resources.getIdentifier(avatarName, "drawable", requireContext().packageName)
+
+                        val user = UserFromSharedList(
+                            remoteId = userId,
+                            name = name,
+                            lastName = lastName,
+                            email = email,
+                            avatar = avatarId,
+                            state = status,
+                            avatarName = avatarName
+                        )
+
+                        sharedUsers.add(user)
+                    }
+
+                    renderUserList()
+                }
+
+                override fun onCancelled(error: com.google.firebase.database.DatabaseError) {
+                    Log.e("ListDialog", "Error al cargar usuarios compartidos", error.toException())
+                }
+            })
+        }
+    }
+
 }
 
