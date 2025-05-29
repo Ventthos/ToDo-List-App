@@ -620,9 +620,12 @@ class MainActivity : AppCompatActivity(), TaskDialogFragment.TaskEditListener, L
 
     override fun OnTaskClickForEdit(task: Task) {
         Log.i("EL UD DEL TASK ES", task.remoteId.toString())
+        if(taskModel.currentPage < -4 && task.emailCreated != taskModel.currentUserEmail){
+            return
+        }
+
         TaskDialogFragment.setArguments(task.id, task.title, task.notes, task.importance, task.date, task.remoteId)
             .show(supportFragmentManager, "TaskEdit")
-
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
@@ -727,23 +730,32 @@ class MainActivity : AppCompatActivity(), TaskDialogFragment.TaskEditListener, L
                     runFilters()
                 }
                 else{
-                    taskModel.deleteSharedTask(task.remoteId!!)
+                    if(task.emailCreated == taskModel.currentUserEmail) {
+                        taskModel.deleteSharedTask(task.remoteId!!)
+                    }
+
                 }
 
                 true
             }
             //Aqui para cambiar fecha de vencimiento
             R.id.changeDateMenu ->{
+                if(taskModel.currentPage < -4 && task.emailCreated != taskModel.currentUserEmail) {
+                    return true
+                }
+
                 val dateDialog = DateDialogFragment()
                 dateDialog.show(supportFragmentManager, "datePicker")
                 true
             }
             R.id.removeImportanceMenu ->{ //Si eligieron eliminar importancia, llamamos a la función
-                if(taskModel.currentPage > -4){
+                if(taskModel.currentPage >= -4){
                     taskModel.editTask(task.id, task.title, task.notes, 0, task.date)
                 }
                 else{
-                    taskModel.removeImportanceForShared(task.remoteId!!)
+                    if(task.emailCreated == taskModel.currentUserEmail) {
+                        taskModel.removeImportanceForShared(task.remoteId!!)
+                    }
                 }
                 runFilters()
                 true
@@ -751,11 +763,13 @@ class MainActivity : AppCompatActivity(), TaskDialogFragment.TaskEditListener, L
             R.id.setTodayLimitMenu->{ // Settea la fecha de hoy
                 val formatter = java.text.SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
                 val today = formatter.format(System.currentTimeMillis())
-                if(taskModel.currentPage > -4){
+                if(taskModel.currentPage >= -4){
                     taskModel.changeDateLimit(task.id, today)
                 }
                 else{
-                    taskModel.changeDataLimitForShared(task.remoteId!!, today)
+                    if(task.emailCreated == taskModel.currentUserEmail) {
+                        taskModel.changeDataLimitForShared(task.remoteId!!, today)
+                    }
                 }
                 runFilters()
                 true
@@ -765,27 +779,32 @@ class MainActivity : AppCompatActivity(), TaskDialogFragment.TaskEditListener, L
                 calendar.add(java.util.Calendar.DAY_OF_YEAR, 1) // Suma un día
                 val formatter = java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.getDefault()) // Formato de fecha
                 val tomorrow = formatter.format(calendar.time)
-                if(taskModel.currentPage > -4){
+                if(taskModel.currentPage >= -4){
                     taskModel.changeDateLimit(task.id, tomorrow)
                 }
                 else{
-                    taskModel.changeDataLimitForShared(task.remoteId!!, tomorrow)
+                    if(task.emailCreated == taskModel.currentUserEmail) {
+                        taskModel.changeDataLimitForShared(task.remoteId!!, tomorrow)
+                    }
+
                 }
                 runFilters()
                 true
             }
             R.id.removeDateMenu->{ // Remueve la fecha
-                if(taskModel.currentPage > -4){
+                if(taskModel.currentPage >= -4){
                     taskModel.editTask(task.id, task.title, task.notes, task.importance, null)
                 }
                 else{
-                    taskModel.changeDataLimitForShared(task.remoteId!!, "")
+                    if(task.emailCreated == taskModel.currentUserEmail) {
+                        taskModel.changeDataLimitForShared(task.remoteId!!, "")
+                    }
                 }
                 runFilters()
                 true
             }
             R.id.completeActionMenu->{ // Completa la tarea
-                if(taskModel.currentPage > -4){
+                if(taskModel.currentPage >= -4){
                     taskModel.changeCompleted(task.id, true)
                 }
                 else{
