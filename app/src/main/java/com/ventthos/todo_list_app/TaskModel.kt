@@ -349,8 +349,10 @@ class TaskModel: ViewModel() {
                                 color = listData?.color ?: 0,
                                 iconName = listData?.iconName ?: "time",
                                 iconId = listData?.iconId ?: R.drawable.time,
-                                userId = listData?.userId ?: -1
+                                userId = listData?.userId ?: -1,
+
                             )
+                            list.userEmail = listData?.userEmail
                             val sharedUsers = mutableListOf<UserFromSharedList>()
 
                             for (userSnap in sharedUsersSnap.children) {

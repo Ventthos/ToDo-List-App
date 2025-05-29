@@ -368,6 +368,8 @@ class MainActivity : AppCompatActivity(), TaskDialogFragment.TaskEditListener, L
             for (i in 0 until toolbar.menu.size()) {
                 val menuItem = toolbar.menu.getItem(i)
                 menuItem.isVisible = true
+
+
                 Log.i("El item del menu es", menuItem.title.toString())
                 if(taskModel.currentPage >= 0 && menuItem.title == getString(R.string.ordenateList)){
                     menuItem.subMenu?.getItem(2)?.setVisible(false)
@@ -375,6 +377,16 @@ class MainActivity : AppCompatActivity(), TaskDialogFragment.TaskEditListener, L
                 }
                 else if(taskModel.currentPage < -4 && menuItem.title == getString(R.string.ordenateList)){
                     menuItem.subMenu?.getItem(2)?.setVisible(true)
+                }
+                else if(taskModel.currentPage < -4 && menuItem.title == getString(R.string.editList)){
+                    val list = taskModel.sharedLists.firstOrNull { it.id == taskModel.currentPage }
+                    Log.i("Comparación de emails", "${list?.userEmail}, ${taskModel.currentUserEmail}")
+                    if(list != null && list.userEmail != taskModel.currentUserEmail){
+                        menuItem.setVisible(false)
+                    }
+                }
+                else{
+                    menuItem.setVisible(true)
                 }
 
             }
