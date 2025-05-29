@@ -109,23 +109,36 @@
             android:id="@+id/addUserLayout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
+            android:orientation="vertical"
             android:layout_marginTop="8dp"
             android:layout_marginBottom="8dp">
 
             <EditText
                 android:id="@+id/emailToAdd"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_gravity="center"
                 android:layout_weight="1"
+                android:gravity="center"
                 android:hint="Correo del usuario" />
 
             <Button
                 android:id="@+id/addUserButton"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_gravity="center"
                 android:text="Agregar" />
+            <Button
+                android:id="@+id/resendNotiButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Reenviar notificaciones"
+                android:layout_gravity="bottom"
+                android:layout_marginTop="8dp"
+                android:visibility="gone" />
+
         </LinearLayout>
+
         <androidx.recyclerview.widget.RecyclerView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

@@ -28,6 +28,7 @@ class ListDialogFragment : DialogFragment(), IconPicker.IconPickerListener{
     lateinit var emailToAdd: EditText
     lateinit var addUserButton: Button
     lateinit var rootDialogView: View
+    lateinit var resendNotiButton: Button
 
     private var id = -1
     private var editing = false
@@ -132,6 +133,41 @@ class ListDialogFragment : DialogFragment(), IconPicker.IconPickerListener{
             val builder = AlertDialog.Builder(it)
             val inflater = requireActivity().layoutInflater;
             val dialogView = inflater.inflate(R.layout.list_window, null)
+            resendNotiButton = dialogView.findViewById(R.id.resendNotiButton)
+            resendNotiButton.setOnClickListener {
+                if (!sharedList || remoteId.isEmpty()) {
+                    Toast.makeText(requireContext(), "La lista no es compartida o aún no ha sido creada", Toast.LENGTH_SHORT).show()
+                    return@setOnClickListener
+                }
+
+                val invitesRef = com.google.firebase.database.FirebaseDatabase.getInstance().getReference("pendingInvites")
+
+                val pendientes = sharedUsers.filter { it.state.lowercase() == "pendiente" }
+
+                if (pendientes.isEmpty()) {
+                    Toast.makeText(requireContext(), "No hay usuarios pendientes para notificar", Toast.LENGTH_SHORT).show()
+                    return@setOnClickListener
+                }
+
+                val fromUser = "Alguien" // Puedes usar tu ViewModel si necesitas el nombre real
+                val listName = titleInput.text.toString()
+
+                pendientes.forEach { user ->
+                    val inviteData = mapOf(
+                        "fromUser" to fromUser,
+                        "listName" to listName,
+                        "timestamp" to System.currentTimeMillis()
+                    )
+
+                    invitesRef
+                        .child(user.remoteId)
+                        .child(remoteId)
+                        .setValue(inviteData)
+                }
+
+                Toast.makeText(requireContext(), "Notificaciones reenviadas a ${pendientes.size} usuarios", Toast.LENGTH_SHORT).show()
+            }
+
             rootDialogView = dialogView // ← ✅ así podés usarlo luego
 
             titleInput = dialogView.findViewById(R.id.titleInput)
@@ -241,6 +277,8 @@ class ListDialogFragment : DialogFragment(), IconPicker.IconPickerListener{
                 remoteId = savedInstanceState.getString(REMOTEIDTAG)?: ""
                 sharedUsers = savedInstanceState.getSerializable(SHAREDUSERSTAG) as? ArrayList<UserFromSharedList> ?: arrayListOf()
                 sharedList = savedInstanceState.getBoolean(SHAREDLISTTAG)
+
+                renderUserList()
             }
             else {
                 // Cargar valores iniciales desde argumentos
@@ -259,6 +297,9 @@ class ListDialogFragment : DialogFragment(), IconPicker.IconPickerListener{
                         remoteId = arguments?.getString("REMOTEID", "")?:""
                         sharedUsers = arguments?.getSerializable("SHAREDUSERS") as? ArrayList<UserFromSharedList> ?: arrayListOf()
                         sharedList = remoteId != ""
+                        if (sharedList && editing) {
+                            resendNotiButton.visibility = View.VISIBLE
+                        }
                         cargarUsuariosCompartidosDesdeFirebase()
                     }
                     // Y si no significa que están creando una lista compartida y que se debe mostrar

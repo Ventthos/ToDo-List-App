@@ -118,31 +118,6 @@ class MainActivity : AppCompatActivity(), TaskDialogFragment.TaskEditListener, L
             if (savedInstanceState != null) {
                 taskModel.currentPage = savedInstanceState.getInt("currentPage", taskModel.currentPage)
             }
-            val invitesRef = Firebase.database.getReference("pendingInvites").child(taskModel.currentUserId.toString())
-            invitesRef.addListenerForSingleValueEvent(object : ValueEventListener {
-                override fun onDataChange(snapshot: DataSnapshot) {
-                    for (inviteSnap in snapshot.children) {
-                        val invite = inviteSnap.getValue(PendingInvite::class.java)
-                        val listId = inviteSnap.key ?: continue
-
-                        val fromUser = invite?.fromUser ?: "Alguien"
-                        val listName = invite?.listName ?: "una lista"
-
-                        AlertDialog.Builder(this@MainActivity)
-                            .setTitle("Nueva invitación")
-                            .setMessage("$fromUser te ha invitado a '$listName'")
-                            .setPositiveButton("OK") { dialog, _ ->
-                                invitesRef.child(listId).removeValue()
-                                dialog.dismiss()
-                            }
-                            .show()
-                    }
-                }
-
-                override fun onCancelled(error: DatabaseError) {
-                    Log.e("Invites", "Error al leer notificaciones", error.toException())
-                }
-            })
         } else {
             Toast.makeText(this, "No hay sesión activa. Por favor, inicia sesión.", Toast.LENGTH_SHORT).show()
             val intent = Intent(this, LoginActivity::class.java)
@@ -150,6 +125,50 @@ class MainActivity : AppCompatActivity(), TaskDialogFragment.TaskEditListener, L
             finish()
             return
         }
+        //invites
+        val usersRef = Firebase.database.getReference("users")
+        Log.d("email", "" + taskModel.currentUserEmail)
+        usersRef.orderByChild("email").equalTo(taskModel.currentUserEmail)
+            .addListenerForSingleValueEvent(object : ValueEventListener {
+                override fun onDataChange(snapshot: DataSnapshot) {
+                    if (snapshot.exists()) {
+                        val userFirebaseId = snapshot.children.first().key ?: return
+
+                        val invitesRef = Firebase.database.getReference("pendingInvites").child(userFirebaseId)
+                        invitesRef.addListenerForSingleValueEvent(object : ValueEventListener {
+                            override fun onDataChange(snapshot: DataSnapshot) {
+                                for (inviteSnap in snapshot.children) {
+                                    val invite = inviteSnap.getValue(PendingInvite::class.java)
+                                    val listId = inviteSnap.key ?: continue
+
+                                    val fromUser = invite?.fromUser ?: "Alguien"
+                                    val listName = invite?.listName ?: "una lista"
+
+                                    Snackbar.make(
+                                        findViewById(R.id.coordinatorLayout),
+                                        "$fromUser te ha invitado a '$listName'",
+                                        Snackbar.LENGTH_LONG
+                                    )
+                                        .setAction("Aceptar") {
+                                            invitesRef.child(listId).removeValue()
+                                        }
+                                        .show()
+                                }
+                            }
+
+                            override fun onCancelled(error: DatabaseError) {
+                                Log.e("Invites", "Error al leer notificaciones", error.toException())
+                            }
+                        })
+                    } else {
+                        Log.e("Firebase", "No se encontró al usuario en Firebase con ese correo")
+                    }
+                }
+
+                override fun onCancelled(error: DatabaseError) {
+                    Log.e("Firebase", "Error buscando usuario por correo", error.toException())
+                }
+            })
 
 
         //termina logica db
@@ -499,7 +518,7 @@ class MainActivity : AppCompatActivity(), TaskDialogFragment.TaskEditListener, L
                         .child(generatedId) // usamos el ID real de la nueva lista
                         .setValue(inviteData)
                 }
-
+            return
         }
 
 
