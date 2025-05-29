@@ -19,6 +19,7 @@ import com.ventthos.todo_list_app.db.dataclasses.TaskList
 import com.ventthos.todo_list_app.db.dataclasses.Task
 import com.google.firebase.database.GenericTypeIndicator
 import com.ventthos.todo_list_app.db.dataclasses.TaskListFirebase
+import com.ventthos.todo_list_app.db.dataclasses.UserFromSharedList
 
 enum class SortOrder {
     DEFAULT,
@@ -315,7 +316,7 @@ class TaskModel: ViewModel() {
         database.getReference("lists").orderByChild("userId").equalTo(currentUserId.toDouble())
 
     // Función para poder empezar a escuchar los cambios
-    fun listenToSharedLists(updater: () -> Unit) {
+    fun listenToSharedLists(updater: () -> Unit, context: Context) {
         val user = userDao.getUserById(currentUserId)
         val userEmail = user?.email ?: return
 
@@ -350,6 +351,34 @@ class TaskModel: ViewModel() {
                                 iconId = listData?.iconId ?: R.drawable.time,
                                 userId = listData?.userId ?: -1
                             )
+                            val sharedUsers = mutableListOf<UserFromSharedList>()
+
+                            for (userSnap in sharedUsersSnap.children) {
+                                val userId = userSnap.key ?: continue
+                                val name = userSnap.child("name").getValue(String::class.java) ?: "Desconocido"
+                                val lastName = userSnap.child("lastName").getValue(String::class.java) ?: ""
+                                val email = userSnap.child("email").getValue(String::class.java) ?: ""
+                                val status = userSnap.child("status").getValue(String::class.java) ?: "pendiente"
+                                val avatarName = userSnap.child("avatarName").getValue(String::class.java) ?: "mark"
+                                val avatarId = context?.resources?.getIdentifier(
+                                    avatarName, "drawable", context!!.packageName
+                                ) ?: R.drawable.mark // default
+
+                                sharedUsers.add(
+                                    UserFromSharedList(
+                                        remoteId = userId,
+                                        name = name,
+                                        lastName = lastName,
+                                        email = email,
+                                        state = status,
+                                        avatar = avatarId,
+                                        avatarName = avatarName
+                                    )
+                                )
+                            }
+
+                            list.sharedUsers = sharedUsers
+
                             list.remoteId = remoteId
 
                             // cargar tasks también

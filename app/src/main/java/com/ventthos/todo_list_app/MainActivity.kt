@@ -32,8 +32,12 @@ import com.ventthos.todo_list_app.db.dataclasses.TaskList
 import android.widget.Button
 import android.content.Intent
 import android.widget.ImageView
+import androidx.appcompat.app.AlertDialog
 import com.google.firebase.Firebase
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.database.ValueEventListener
 import com.google.firebase.database.database
 import com.ventthos.todo_list_app.db.dataclasses.UserFromSharedList
 import java.util.Locale
@@ -47,7 +51,11 @@ interface OnTaskClickForEditListener{
     fun OnTaskClickForEdit(task: Task)
 }
 
-
+data class PendingInvite(
+    val fromUser: String = "",
+    val listName: String = "",
+    val timestamp: Long = 0L
+)
 class MainActivity : AppCompatActivity(), TaskDialogFragment.TaskEditListener, ListDialogFragment.ListEditorListener, OnTaskCheckedChangeListener, OnTaskClickForEditListener , DateDialogFragment.DatePickerListener {
     lateinit var navigationView: NavigationView
     lateinit var drawerLayout: DrawerLayout
@@ -110,6 +118,31 @@ class MainActivity : AppCompatActivity(), TaskDialogFragment.TaskEditListener, L
             if (savedInstanceState != null) {
                 taskModel.currentPage = savedInstanceState.getInt("currentPage", taskModel.currentPage)
             }
+            val invitesRef = Firebase.database.getReference("pendingInvites").child(taskModel.currentUserId.toString())
+            invitesRef.addListenerForSingleValueEvent(object : ValueEventListener {
+                override fun onDataChange(snapshot: DataSnapshot) {
+                    for (inviteSnap in snapshot.children) {
+                        val invite = inviteSnap.getValue(PendingInvite::class.java)
+                        val listId = inviteSnap.key ?: continue
+
+                        val fromUser = invite?.fromUser ?: "Alguien"
+                        val listName = invite?.listName ?: "una lista"
+
+                        AlertDialog.Builder(this@MainActivity)
+                            .setTitle("Nueva invitación")
+                            .setMessage("$fromUser te ha invitado a '$listName'")
+                            .setPositiveButton("OK") { dialog, _ ->
+                                invitesRef.child(listId).removeValue()
+                                dialog.dismiss()
+                            }
+                            .show()
+                    }
+                }
+
+                override fun onCancelled(error: DatabaseError) {
+                    Log.e("Invites", "Error al leer notificaciones", error.toException())
+                }
+            })
         } else {
             Toast.makeText(this, "No hay sesión activa. Por favor, inicia sesión.", Toast.LENGTH_SHORT).show()
             val intent = Intent(this, LoginActivity::class.java)
@@ -210,6 +243,15 @@ class MainActivity : AppCompatActivity(), TaskDialogFragment.TaskEditListener, L
 
                 else->{
                     taskModel.currentPage = menuItem.itemId
+                    if (taskModel.currentPage < -4) {
+                        val list = taskModel.sharedLists.firstOrNull{it.id == taskModel.currentPage}
+                        if (list == null) {
+                            Toast.makeText(this, "Womp womp", Toast.LENGTH_SHORT).show()
+
+                        } else {
+                            onSharedListClicked(list)
+                        }
+                    }
                 }
             }
 
@@ -231,11 +273,11 @@ class MainActivity : AppCompatActivity(), TaskDialogFragment.TaskEditListener, L
         taskModel.getTasks()
 
         //Configuramos el escuchar las listas
-        taskModel.listenToSharedLists {
+        taskModel.listenToSharedLists( {
             runFilters()
             redrawLists()
             changePageStyles()
-        }
+        },this)
         runFilters()
         redrawLists()
     }
@@ -397,32 +439,117 @@ class MainActivity : AppCompatActivity(), TaskDialogFragment.TaskEditListener, L
     ) {
         val lists = taskModel.database.getReference("lists")
         val editedList = TaskList(-1, title, colorId, "", icon, taskModel.currentUserId)
-        editedList.sharedUsers = sharedUsersList
         editedList.userEmail = taskModel.currentUserEmail
 
-        if(!editing){
-            lists.push().setValue(editedList)
+        if (!editing) {
+            val currentUserId = taskModel.currentUserId.toString()
+            val currentUser = taskModel.userDao.getUserById(taskModel.currentUserId)
+            val currentUserName = currentUser?.name ?: "Yo"
+            val currentUserLastName = currentUser?.lastName ?: ""
+            val currentUserEmail = taskModel.currentUserEmail
+            val currentAvatarName = "mark" // puedes obtenerlo dinámico si lo tienes guardado
+            val avatarId = R.drawable.mark
+
+            val yaIncluido = sharedUsersList.any { it.remoteId == currentUserId }
+            if (!yaIncluido) {
+                sharedUsersList.add(
+                    UserFromSharedList(
+                        remoteId = currentUserId,
+                        name = currentUserName,
+                        lastName = currentUserLastName,
+                        email = currentUserEmail,
+                        avatar = avatarId,
+                        state = "aceptado",
+                        avatarName = currentAvatarName
+                    )
+                )
+            }
+
+            val newRef = lists.push()
+            val generatedId = newRef.key ?: return
+
+            // 🔄 Actualizar el ID remoto de la lista en caso de necesitarlo luego
+            editedList.remoteId = generatedId
+            newRef.setValue(editedList)
+
+            // Guardamos sharedUsers
+            val sharedUsersMap = sharedUsersList.associateBy { it.remoteId }.mapValues { (_, user) ->
+                mapOf(
+                    "name" to user.name,
+                    "lastName" to user.lastName,
+                    "email" to user.email,
+                    "status" to user.state,
+                    "avatarName" to user.avatarName
+                )
+            }
+
+            newRef.child("sharedUsers").setValue(sharedUsersMap)
+            val invitesRef = taskModel.database.getReference("pendingInvites")
+
+            sharedUsersList
+                .filter { it.state.lowercase() == "pendiente" }
+                .forEach { user ->
+                    val inviteData = mapOf(
+                        "fromUser" to currentUserName,
+                        "listName" to title,
+                        "timestamp" to System.currentTimeMillis()
+                    )
+                    invitesRef
+                        .child(user.remoteId)
+                        .child(generatedId) // usamos el ID real de la nueva lista
+                        .setValue(inviteData)
+                }
+
+        }
+
+
+
+        val sharedList = taskModel.sharedLists.firstOrNull { it.id == taskModel.currentPage }
+        if (sharedList == null) {
+            Toast.makeText(this, "La lista que se quería editar ya no existe", Toast.LENGTH_SHORT).show()
             return
         }
-        // Tenemos que igual ponerle las tasks, ya que si no, las pierde
-        val sharedList = taskModel.sharedLists.firstOrNull{it.id == taskModel.currentPage}
 
-        // Por si la borran mientras editan
-        if(sharedList == null) {
-            Toast.makeText(this, "La lista que se quería editar ya no existe", Toast.LENGTH_SHORT)
-                .show()
-            return
-        }
-
-        // Esto es para actualizar el color de las tareas
-        val updatedColorTask = sharedList.tasks!!.map { task->
+        val updatedColorTask = sharedList.tasks!!.map { task ->
             task.copy(colorId = colorId)
         }
-        // las tengo que actualizar obvio
         editedList.tasks = updatedColorTask.toMutableList()
 
-        lists.child(id).setValue(editedList)
+        val listRef = lists.child(id)
+        listRef.setValue(editedList)
+
+        val sharedUsersMap = sharedUsersList.associateBy { it.remoteId }.mapValues { (_, user) ->
+            mapOf(
+                "name" to user.name,
+                "lastName" to user.lastName,
+                "email" to user.email,
+                "status" to user.state,
+                "avatarName" to user.avatarName
+            )
+        }
+        listRef.child("sharedUsers").setValue(sharedUsersMap)
+        // 🔔 Enviar notificaciones a nuevos usuarios pendientes solo si no estaban antes
+        val invitesRef = taskModel.database.getReference("pendingInvites")
+        val usuariosAnteriores = sharedList.sharedUsers?.map { it.remoteId } ?: listOf()
+
+        sharedUsersList
+            .filter { it.state.lowercase() == "pendiente" && it.remoteId !in usuariosAnteriores }
+            .forEach { user ->
+                val currentUser = taskModel.userDao.getUserById(taskModel.currentUserId)
+                val inviteData = mapOf(
+                    "fromUser" to (currentUser?.name ?: "Alguien"),
+                    "listName" to title,
+                    "timestamp" to System.currentTimeMillis()
+                )
+
+                invitesRef
+                    .child(user.remoteId)
+                    .child(id)
+                    .setValue(inviteData)
+            }
+
     }
+
 
     override fun onSharedListDeleted(id: String) {
         taskModel.deleteSharedList(id)
@@ -673,6 +800,54 @@ class MainActivity : AppCompatActivity(), TaskDialogFragment.TaskEditListener, L
         }
     }
 
+    fun abrirListaCompartida(list: TaskList) {
+        taskModel.currentPage = list.id
+        taskModel.filterByList(recyclerView, shared = true)
+        runFilters()
+        redrawLists()
+        changePageStyles()
+    }
+    fun onSharedListClicked(list: TaskList) {
+        val currentUserEmail = taskModel.currentUserEmail
+        val currentUserInList = list.sharedUsers?.firstOrNull { it.email == currentUserEmail }
+        Log.d("user", "" + list.sharedUsers)
+        Log.d("email", "" + currentUserEmail + " " + currentUserInList)
+        if (currentUserInList != null && currentUserInList.state == "pendiente") {
+            AlertDialog.Builder(this)
+                .setTitle("Invitación pendiente")
+                .setMessage("No has aceptado la invitación a esta lista.\n¿Deseas aceptarla?\nSi no aceptas, se rechazará y se eliminará de tus listas.")
+                .setPositiveButton("Aceptar") { _, _ ->
+                    val userRef = com.google.firebase.database.FirebaseDatabase.getInstance()
+                        .getReference("lists")
+                        .child(list.remoteId!!)
+                        .child("sharedUsers")
+                        .child(currentUserInList.remoteId)
+                        .child("status")
+
+                    userRef.setValue("aceptado").addOnSuccessListener {
+                        Toast.makeText(this, "¡Invitación aceptada!", Toast.LENGTH_SHORT).show()
+                        abrirListaCompartida(list)
+                    }
+                }
+                .setNegativeButton("Rechazar") { _, _ ->
+                    val userRef = com.google.firebase.database.FirebaseDatabase.getInstance()
+                        .getReference("lists")
+                        .child(list.remoteId!!)
+                        .child("sharedUsers")
+                        .child(currentUserInList.remoteId)
+
+                    userRef.removeValue().addOnSuccessListener {
+                        Toast.makeText(this, "Invitación rechazada", Toast.LENGTH_SHORT).show()
+                        taskModel.sharedLists.remove(list)
+                        redrawLists()
+                    }
+                }
+                .setCancelable(false)
+                .show()
+        } else {
+            abrirListaCompartida(list)
+        }
+    }
 
     override fun onDateSelected(year: Int, month: Int, day: Int) {
         // Parceamos los datos

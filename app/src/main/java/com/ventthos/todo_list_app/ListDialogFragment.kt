@@ -99,25 +99,33 @@ class ListDialogFragment : DialogFragment(), IconPicker.IconPickerListener{
         val title = titleInput.text.toString()
         val color = spinner.selectedItem as? ColorObject
 
-        if(!deleting && (currentIcon == 0 || title == "")){
+        if (!deleting && (currentIcon == 0 || title == "")) {
             Toast.makeText(this.context, R.string.fillingError, Toast.LENGTH_SHORT).show()
             return
         }
 
-        if(deleting && !sharedList){
-            listener?.onListDeleted(id, title, currentIcon, color?.colorId?: basicColors.first().colorId, editing)
+        if (deleting && !sharedList) {
+            listener?.onListDeleted(id, title, currentIcon, color?.colorId ?: basicColors.first().colorId, editing)
             return
-        }
-        else if(!sharedList){
-            listener?.onListEdited(id, title, currentIcon, color?.colorId?: basicColors.first().colorId, editing)
+        } else if (!sharedList) {
+            listener?.onListEdited(id, title, currentIcon, color?.colorId ?: basicColors.first().colorId, editing)
             return
-        }
-        else if(deleting){
+        } else if (deleting) {
             listener?.onSharedListDeleted(remoteId)
             return
         }
-        listener?.onSharedListEdited(remoteId, title, currentIcon, color?.colorId?: basicColors.first().colorId, editing, sharedUsers)
+
+        // ✅ NO filtramos los usuarios aceptados/rechazados, los mantenemos
+        listener?.onSharedListEdited(
+            remoteId,
+            title,
+            currentIcon,
+            color?.colorId ?: basicColors.first().colorId,
+            editing,
+            sharedUsers // todos
+        )
     }
+
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         return activity?.let {
