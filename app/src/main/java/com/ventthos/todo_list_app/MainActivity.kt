@@ -892,10 +892,14 @@ class MainActivity : AppCompatActivity(), TaskDialogFragment.TaskEditListener, L
                         .child("sharedUsers")
                         .child(currentUserInList.remoteId)
 
-                    userRef.removeValue().addOnSuccessListener {
+                    userRef.updateChildren(mapOf(
+                        "status" to "rechazado"
+                    )).addOnSuccessListener {
                         Toast.makeText(this, "Invitación rechazada", Toast.LENGTH_SHORT).show()
                         taskModel.sharedLists.remove(list)
                         redrawLists()
+                    }.addOnFailureListener {
+                        Toast.makeText(this, "Error al rechazar la invitación", Toast.LENGTH_SHORT).show()
                     }
                 }
                 .setCancelable(false)
