@@ -41,6 +41,7 @@ class ListDialogFragment : DialogFragment(), IconPicker.IconPickerListener{
     private val REMOTEIDTAG = "RemoteId"
     private val SHAREDLISTTAG = "SharedList"
     private val SHAREDUSERSTAG = "SharedUsersTag"
+    private val RESEND_VISIBLE_TAG = "ResendButtonVisible"
 
     // Para poder hacer cosas de firebase
     private var sharedList = false
@@ -134,6 +135,12 @@ class ListDialogFragment : DialogFragment(), IconPicker.IconPickerListener{
             val inflater = requireActivity().layoutInflater;
             val dialogView = inflater.inflate(R.layout.list_window, null)
             resendNotiButton = dialogView.findViewById(R.id.resendNotiButton)
+
+            if (savedInstanceState != null) {
+                val isVisible = savedInstanceState.getBoolean(RESEND_VISIBLE_TAG, false)
+                resendNotiButton.visibility = if (isVisible) View.VISIBLE else View.GONE
+            }
+
             resendNotiButton.setOnClickListener {
                 if (!sharedList || remoteId.isEmpty()) {
                     Toast.makeText(requireContext(), "La lista no es compartida o aún no ha sido creada", Toast.LENGTH_SHORT).show()
@@ -388,6 +395,8 @@ class ListDialogFragment : DialogFragment(), IconPicker.IconPickerListener{
         outState.putString(REMOTEIDTAG, remoteId)
         outState.putSerializable(SHAREDUSERSTAG, ArrayList(sharedUsers))
         outState.putBoolean(SHAREDLISTTAG, sharedList)
+        outState.putBoolean(RESEND_VISIBLE_TAG, rootDialogView.findViewById<Button>(R.id.resendNotiButton).visibility == View.VISIBLE)
+
     }
 
     private fun renderUserList() {
