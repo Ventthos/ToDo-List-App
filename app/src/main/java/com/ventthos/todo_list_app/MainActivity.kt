@@ -56,7 +56,7 @@ data class PendingInvite(
     val listName: String = "",
     val timestamp: Long = 0L
 )
-class MainActivity : AppCompatActivity(), TaskDialogFragment.TaskEditListener, ListDialogFragment.ListEditorListener, OnTaskCheckedChangeListener, OnTaskClickForEditListener , DateDialogFragment.DatePickerListener {
+class MainActivity : AppCompatActivity(), TaskDialogFragment.TaskEditListener, ListDialogFragment.ListEditorListener, OnTaskCheckedChangeListener, OnTaskClickForEditListener , DateDialogFragment.DatePickerListener, InvitationDialogListener  {
     lateinit var navigationView: NavigationView
     lateinit var drawerLayout: DrawerLayout
     lateinit var drawerToggle: ActionBarDrawerToggle
@@ -249,12 +249,34 @@ class MainActivity : AppCompatActivity(), TaskDialogFragment.TaskEditListener, L
         taskModel.getListFromDb(this)
         taskModel.getTasks()
 
-        //Configuramos el escuchar las listas
-        taskModel.listenToSharedLists( {
+        val pendingPage = taskModel.currentPage
+        var alreadyLoaded = false
+
+        taskModel.listenToSharedLists({
             runFilters()
             redrawLists()
             changePageStyles()
-        },this)
+
+            if (!alreadyLoaded) {
+                alreadyLoaded = true // <- Mueve esto aquí, para que solo ocurra una vez
+
+                if (pendingPage < -4) {
+                    val sharedList = taskModel.sharedLists.firstOrNull { it.id == pendingPage }
+                    if (sharedList != null) {
+                        taskModel.currentPage = pendingPage
+                        onSharedListClicked(sharedList)
+                    } else {
+                        Toast.makeText(this, "No se encontró la lista compartida seleccionada", Toast.LENGTH_SHORT).show()
+                    }
+                } else {
+                    taskModel.currentPage = pendingPage
+                }
+
+                runFilters(true)
+                changePageStyles()
+            }
+
+        }, this)
         runFilters()
         redrawLists()
     }
@@ -345,6 +367,7 @@ class MainActivity : AppCompatActivity(), TaskDialogFragment.TaskEditListener, L
 
                 if (list != null) {
                     pageTitle.text = list.name
+
                 } else {
                     // Manejo cuando la lista no se encuentra
                     Log.e("MainActivity", "Lista con ID ${taskModel.currentPage} no encontrada")
@@ -548,8 +571,14 @@ class MainActivity : AppCompatActivity(), TaskDialogFragment.TaskEditListener, L
         }
 
         val updatedColorTask = sharedList.tasks!!.map { task ->
-            task.copy(colorId = colorId)
+            task.copy(colorId = colorId).also {
+                it.remoteId = task.remoteId
+                it.emailCreated = task.emailCreated
+                it.iconCreated = task.iconCreated
+                it.nameCreated = task.nameCreated
+            }
         }
+         
         editedList.tasks = updatedColorTask.toMutableList()
 
         val listRef = lists.child(id)
@@ -864,46 +893,17 @@ class MainActivity : AppCompatActivity(), TaskDialogFragment.TaskEditListener, L
         changePageStyles()
     }
     fun onSharedListClicked(list: TaskList) {
+        val list = taskModel.sharedLists.firstOrNull{it.id == taskModel.currentPage}
+        if (list == null) {
+            Toast.makeText(this, "Womp womp", Toast.LENGTH_SHORT).show()
+            return
+        }
         val currentUserEmail = taskModel.currentUserEmail
         val currentUserInList = list.sharedUsers?.firstOrNull { it.email == currentUserEmail }
-        Log.d("user", "" + list.sharedUsers)
-        Log.d("email", "" + currentUserEmail + " " + currentUserInList)
         if (currentUserInList != null && currentUserInList.state == "pendiente") {
-            AlertDialog.Builder(this)
-                .setTitle("Invitación pendiente")
-                .setMessage("No has aceptado la invitación a esta lista.\n¿Deseas aceptarla?\nSi no aceptas, se rechazará y se eliminará de tus listas.")
-                .setPositiveButton("Aceptar") { _, _ ->
-                    val userRef = com.google.firebase.database.FirebaseDatabase.getInstance()
-                        .getReference("lists")
-                        .child(list.remoteId!!)
-                        .child("sharedUsers")
-                        .child(currentUserInList.remoteId)
-                        .child("status")
+            InvitationDialogFragment.newInstance()
+                .show(supportFragmentManager, "InvitationDialog")
 
-                    userRef.setValue("aceptado").addOnSuccessListener {
-                        Toast.makeText(this, "¡Invitación aceptada!", Toast.LENGTH_SHORT).show()
-                        abrirListaCompartida(list)
-                    }
-                }
-                .setNegativeButton("Rechazar") { _, _ ->
-                    val userRef = com.google.firebase.database.FirebaseDatabase.getInstance()
-                        .getReference("lists")
-                        .child(list.remoteId!!)
-                        .child("sharedUsers")
-                        .child(currentUserInList.remoteId)
-
-                    userRef.updateChildren(mapOf(
-                        "status" to "rechazado"
-                    )).addOnSuccessListener {
-                        Toast.makeText(this, "Invitación rechazada", Toast.LENGTH_SHORT).show()
-                        taskModel.sharedLists.remove(list)
-                        redrawLists()
-                    }.addOnFailureListener {
-                        Toast.makeText(this, "Error al rechazar la invitación", Toast.LENGTH_SHORT).show()
-                    }
-                }
-                .setCancelable(false)
-                .show()
         } else {
             abrirListaCompartida(list)
         }
@@ -924,5 +924,53 @@ class MainActivity : AppCompatActivity(), TaskDialogFragment.TaskEditListener, L
             taskModel.changeDataLimitForShared(task.remoteId!!, finalDate)
         }
         runFilters()
+    }
+
+    override fun onAcceptInvitation() {
+        val list = taskModel.sharedLists.firstOrNull{it.id == taskModel.currentPage}
+        if (list == null) {
+            Toast.makeText(this, "Womp womp", Toast.LENGTH_SHORT).show()
+            return
+        }
+        val currentUserEmail = taskModel.currentUserEmail
+        val currentUserInList = list.sharedUsers?.firstOrNull { it.email == currentUserEmail }
+        Log.d("user", "" + list.sharedUsers)
+        Log.d("email", "" + currentUserEmail + " " + currentUserInList)
+        val userRef = com.google.firebase.database.FirebaseDatabase.getInstance()
+            .getReference("lists")
+            .child(list.remoteId!!)
+            .child("sharedUsers")
+            .child(currentUserInList?.remoteId!!)
+            .child("status")
+
+        userRef.setValue("aceptado").addOnSuccessListener {
+            Toast.makeText(this, "¡Invitación aceptada!", Toast.LENGTH_SHORT).show()
+            abrirListaCompartida(list)
+        }
+    }
+
+    override fun onRejectInvitation() {
+        val list = taskModel.sharedLists.firstOrNull{it.id == taskModel.currentPage}
+        if (list == null) {
+            Toast.makeText(this, "Womp womp", Toast.LENGTH_SHORT).show()
+            return
+        }
+        val currentUserEmail = taskModel.currentUserEmail
+        val currentUserInList = list.sharedUsers?.firstOrNull { it.email == currentUserEmail }
+        val userRef = com.google.firebase.database.FirebaseDatabase.getInstance()
+            .getReference("lists")
+            .child(list.remoteId!!)
+            .child("sharedUsers")
+            .child(currentUserInList?.remoteId!!)
+
+        userRef.updateChildren(mapOf(
+            "status" to "rechazado"
+        )).addOnSuccessListener {
+            Toast.makeText(this, "Invitación rechazada", Toast.LENGTH_SHORT).show()
+            taskModel.sharedLists.remove(list)
+            redrawLists()
+        }.addOnFailureListener {
+            Toast.makeText(this, "Error al rechazar la invitación", Toast.LENGTH_SHORT).show()
+        }
     }
 }
