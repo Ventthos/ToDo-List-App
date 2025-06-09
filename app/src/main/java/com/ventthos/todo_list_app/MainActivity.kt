@@ -58,6 +58,8 @@ data class PendingInvite(
 )
 class MainActivity : AppCompatActivity(), TaskDialogFragment.TaskEditListener, ListDialogFragment.ListEditorListener, OnTaskCheckedChangeListener, OnTaskClickForEditListener , DateDialogFragment.DatePickerListener, InvitationDialogListener  {
     lateinit var navigationView: NavigationView
+    private var currentPendingList: TaskList? = null
+    private var currentUserFirebaseId: String? = null
     lateinit var drawerLayout: DrawerLayout
     lateinit var drawerToggle: ActionBarDrawerToggle
     lateinit var toolbar: androidx.appcompat.widget.Toolbar
@@ -893,21 +895,33 @@ class MainActivity : AppCompatActivity(), TaskDialogFragment.TaskEditListener, L
         changePageStyles()
     }
     fun onSharedListClicked(list: TaskList) {
-        val list = taskModel.sharedLists.firstOrNull{it.id == taskModel.currentPage}
-        if (list == null) {
-            Toast.makeText(this, "Womp womp", Toast.LENGTH_SHORT).show()
-            return
-        }
         val currentUserEmail = taskModel.currentUserEmail
         val currentUserInList = list.sharedUsers?.firstOrNull { it.email == currentUserEmail }
+
         if (currentUserInList != null && currentUserInList.state == "pendiente") {
-            InvitationDialogFragment.newInstance()
-                .show(supportFragmentManager, "InvitationDialog")
+            currentPendingList = list
+
+            // Busca el ID en Firebase del usuario actual por correo
+            val usersRef = Firebase.database.getReference("users")
+            usersRef.orderByChild("email").equalTo(currentUserEmail)
+                .addListenerForSingleValueEvent(object : ValueEventListener {
+                    override fun onDataChange(snapshot: DataSnapshot) {
+                        if (snapshot.exists()) {
+                            currentUserFirebaseId = snapshot.children.first().key
+                            InvitationDialogFragment.newInstance()
+                                .show(supportFragmentManager, "InvitationDialog")
+                        }
+                    }
+
+                    override fun onCancelled(error: DatabaseError) {}
+
+                })
 
         } else {
             abrirListaCompartida(list)
         }
     }
+
 
     override fun onDateSelected(year: Int, month: Int, day: Int) {
         // Parceamos los datos
@@ -947,6 +961,14 @@ class MainActivity : AppCompatActivity(), TaskDialogFragment.TaskEditListener, L
             Toast.makeText(this, "¡Invitación aceptada!", Toast.LENGTH_SHORT).show()
             abrirListaCompartida(list)
         }
+        val userId = currentUserInList.remoteId
+        Firebase.database.getReference("pendingInvites")
+            .child(userId)
+            .child(list.remoteId!!)
+            .removeValue()
+
+        Toast.makeText(this, "¡Invitación aceptada!", Toast.LENGTH_SHORT).show()
+        abrirListaCompartida(list)
     }
 
     override fun onRejectInvitation() {
@@ -972,5 +994,14 @@ class MainActivity : AppCompatActivity(), TaskDialogFragment.TaskEditListener, L
         }.addOnFailureListener {
             Toast.makeText(this, "Error al rechazar la invitación", Toast.LENGTH_SHORT).show()
         }
+        val userId = currentUserInList.remoteId
+        Firebase.database.getReference("pendingInvites")
+            .child(userId)
+            .child(list.remoteId!!)
+            .removeValue()
+
+        Toast.makeText(this, "Invitación rechazada", Toast.LENGTH_SHORT).show()
+        taskModel.sharedLists.remove(list)
+        redrawLists()
     }
 }

@@ -34,6 +34,7 @@ class InvitationDialogFragment : DialogFragment() {
             .create()
     }
 
+
     companion object {
         fun newInstance(): InvitationDialogFragment {
             return InvitationDialogFragment()
