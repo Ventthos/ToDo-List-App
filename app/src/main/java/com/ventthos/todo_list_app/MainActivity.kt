@@ -908,8 +908,11 @@ class MainActivity : AppCompatActivity(), TaskDialogFragment.TaskEditListener, L
                     override fun onDataChange(snapshot: DataSnapshot) {
                         if (snapshot.exists()) {
                             currentUserFirebaseId = snapshot.children.first().key
-                            InvitationDialogFragment.newInstance()
-                                .show(supportFragmentManager, "InvitationDialog")
+                            val existingDialog = supportFragmentManager.findFragmentByTag("InvitationDialog")
+                            if (existingDialog == null) {
+                                InvitationDialogFragment.newInstance()
+                                    .show(supportFragmentManager, "InvitationDialog")
+                            }
                         }
                     }
 
